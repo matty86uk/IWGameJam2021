@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Scenes/World.gd" type="Script" id=1]
+
+[node name="World" type="Spatial"]
+script = ExtResource( 1 )
+
+[node name="Base" type="MeshInstance" parent="."]
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.608858, 0.793279, 0, -0.793279, 0.608858, -9.90913, 19.0977, 14.6078 )
+far = 8192.0
