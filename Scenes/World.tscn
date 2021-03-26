@@ -1,21 +1,37 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Scenes/World.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/Root.gd" type="Script" id=2]
+
+[sub_resource type="ProceduralSky" id=4]
+
+[sub_resource type="Environment" id=3]
+background_sky = SubResource( 4 )
+background_color = Color( 1, 1, 1, 1 )
+ambient_light_color = Color( 1, 1, 1, 1 )
+tonemap_mode = 3
+glow_enabled = true
+
+[sub_resource type="SpatialMaterial" id=1]
+vertex_color_use_as_albedo = true
+albedo_color = Color( 0.0862745, 0.560784, 0.0588235, 1 )
+
+[sub_resource type="PlaneMesh" id=2]
+material = SubResource( 1 )
+size = Vector2( 500, 500 )
 
 [node name="World" type="Spatial"]
 script = ExtResource( 1 )
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( -1.62921e-07, 0.707107, -0.707107, 0, 0.707107, 0.707107, 1, 1.15203e-07, -1.15203e-07, -105.699, 57.4779, -3.08446 )
+environment = SubResource( 3 )
 near = 0.01
 far = 7666.3
 
-[node name="Base" type="MeshInstance" parent="."]
-
-[node name="SpotLight" type="SpotLight" parent="."]
-transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, -4.53623, 39.4019, 0 )
-spot_range = 4096.0
-
 [node name="Root" type="Spatial" parent="."]
 script = ExtResource( 2 )
+
+[node name="Base" type="MeshInstance" parent="Root"]
+mesh = SubResource( 2 )
+material/0 = null

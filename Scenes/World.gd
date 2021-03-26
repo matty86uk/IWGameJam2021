@@ -4,39 +4,61 @@ var size_x
 var size_z
 
 func _ready():
-	randomize()
-	#rand_seed(12345)
-	var points = generate_roads(Vector3(0,0,0), 3, SimpleRoads.new(), 3)
+	#randomize()
+	rand_seed(12345)
+	var map_dictionary = {}
+	var points = generate_roads(Vector3(0,0,0), 3, SimpleRoads.new(), 1)
+
+	for p in points:
+		var p1 = p*3+(Vector3(-1,0,1))
+		var p2 = p*3+(Vector3(0,0,1))
+		var p3 = p*3+(Vector3(1,0,1))
+		var p4 = p*3+(Vector3(-1,0,0))
+		var p5 = p*3+(Vector3(0,0,0))
+		var p6 = p*3+(Vector3(1,0,0))
+		var p7 = p*3+(Vector3(-1,0,-1))
+		var p8 = p*3+(Vector3(0,0,-1))
+		var p9 = p*3+(Vector3(1,0,-1))
+
+		map_dictionary[p1.round()] = "ROAD"
+		map_dictionary[p2.round()] = "ROAD"
+		map_dictionary[p3.round()] = "ROAD"
+		map_dictionary[p4.round()] = "ROAD"
+		map_dictionary[p5.round()] = "ROAD"
+		map_dictionary[p6.round()] = "ROAD"
+		map_dictionary[p7.round()] = "ROAD"
+		map_dictionary[p8.round()] = "ROAD"
+		map_dictionary[p9.round()] = "ROAD"
+		
+	var pavement_points = generate_pavement(map_dictionary)		
+	for p in pavement_points:
+		map_dictionary[p.round()] = "PAVEMENT"
 	
-	var road_dictionary = {}	
 	
-	var m2 = SpatialMaterial.new()
-	m2.vertex_color_use_as_albedo = true
-	m2.params_point_size = 4
-	m2.flags_use_point_size = true
-	m2.flags_unshaded = true
+	var road_tarmac = SpatialMaterial.new()
+	road_tarmac.albedo_color = Color8(32, 30, 25)
+	road_tarmac.vertex_color_use_as_albedo = true
 	
-	var m1 = SpatialMaterial.new()
-	m1.vertex_color_use_as_albedo = true
-	m1.params_point_size = 4
-	m1.flags_use_point_size = true
-	m1.flags_unshaded = true
+	var road_paint = SpatialMaterial.new()
+	road_paint.albedo_color = Color.white
+	road_paint.vertex_color_use_as_albedo = true
 	
-	var m = SpatialMaterial.new()
-	m.vertex_color_use_as_albedo = true	
-	m.flags_unshaded = true
+	var pavement = SpatialMaterial.new()
+	pavement.albedo_color = Color.darkgray
+	pavement.vertex_color_use_as_albedo = true
 	
-	var st1 = SurfaceTool.new()
-	st1.begin(Mesh.PRIMITIVE_POINTS)
-	st1.add_color(Color.yellow)
-	var st = SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_LINES)
-	st.add_color(Color.white)
+	
+	var road_mesh = CubeMesh.new()	
+	road_mesh.size = Vector3(1, 0.5, 1)
+	
+	var road_middle_mesh = CubeMesh.new()
+	road_middle_mesh.size = Vector3(0.4,0.5,0.4)
+	
 	var max_x = 0
 	var max_z = 0
 	var min_x = 0
 	var min_z = 0
-	for p in points:
+	for p in map_dictionary.keys():
 		if (p.x > max_x):
 			max_x = p.x
 		if (p.x < min_x):
@@ -45,43 +67,36 @@ func _ready():
 			max_z = p.z
 		if (p.z < min_z):
 			min_z = p.z
-		road_dictionary[p.round()] = "ROAD"
-		st.add_vertex(p)
-		st1.add_vertex(p)
-	var mesh = st.commit()
-	var mi = MeshInstance.new()
-	mi.mesh = mesh
-	mi.material_override = m
-	$Root.add_child(mi)
-	
-	var mesh1 = st1.commit()
-	var mi1 = MeshInstance.new()
-	mi1.mesh = mesh1
-	mi1.material_override = m1
-	$Root.add_child(mi1)
+		
+		if map_dictionary.get(p) == "ROAD":
+			var mi = MeshInstance.new()
+			mi.transform.origin = p
+			mi.mesh = road_mesh
+			mi.material_override = road_tarmac
+#			if ((int(p.x) % 3) == 0 and (int(p.z) % 3) == 0):
+#				mi.mesh = road_middle_mesh
+#				mi.material_override = road_paint
+			$Root.add_child(mi)
+		
+		if map_dictionary.get(p) == "PAVEMENT":
+			var mi = MeshInstance.new()
+			mi.mesh = road_mesh
+			mi.transform.origin = p + Vector3(0, 0.05,0)
+			mi.material_override = pavement
+			$Root.add_child(mi)
 	
 	print(str("max_x:",max_x))
 	print(str("min_x:",min_x))
 	print(str("max_z:",max_z))
 	print(str("min_z:",min_z))
 	
-	var building_points = generate_buildings(road_dictionary)
+	var p1 = Vector3(max_x, 0, max_z)
+	var p2 = Vector3(max_x, 0, min_z)
+	var p3 = Vector3(min_x, 0, min_z)
+	var p4 = Vector3(min_x, 0, max_z)
 	
-	var st2 = SurfaceTool.new()
-	st2.begin(Mesh.PRIMITIVE_POINTS)
-	for p in building_points:
-		if !road_dictionary.has(p):
-			st2.add_color(Color.blue)
-		else:
-			st2.add_color(Color.red)
-		st2.add_vertex(p)
-		
-	var mesh2 = st2.commit()
-	var mi2 = MeshInstance.new()
-	mi2.mesh = mesh2
-	mi2.material_override = m2
-	$Root.add_child(mi2)
 	
+
 func generate_roads(start_position, iterations, rule, length):
 	var arrangement = rule.axiom
 	for i in iterations:
@@ -106,10 +121,10 @@ func generate_roads(start_position, iterations, rule, length):
 					points.push_back(from)
 					points.push_back(to)
 					from = to
-					to = from + Vector3(1, 0, 0).rotated(Vector3.UP, deg2rad(rot))
-					points.push_back(from)
-					points.push_back(to)
-					from = to
+#					to = from + Vector3(1, 0, 0).rotated(Vector3.UP, deg2rad(rot))
+#					points.push_back(from)
+#					points.push_back(to)
+#					from = to
 			"rotate_right":
 				if !chance_ignore():
 					rot += rule.angle
@@ -129,7 +144,7 @@ func chance_ignore():
 		return true
 	return false
 	
-func generate_buildings(road_dictionary):
+func generate_pavement(road_dictionary):
 	var building_points = []
 	for p in road_dictionary.keys():
 		var free_neighbours = find_free_area(road_dictionary, p)
