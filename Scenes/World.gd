@@ -26,8 +26,23 @@ var building_colors = [
 ]
 
 var pedestrian_astar = AStar2D.new()
+
+var camera_path_index = 0
+var camera_path = []
+
+var mi_object = MeshInstance.new()
+
+func _process(delta):
+	#$Camera.look_at_from_position(camera_path[camera_path_index] + Vector3(0, 50, 0), camera_path[camera_path_index], Vector3.UP)	
+	$Root/MeshInstance.transform.origin = $Root/MeshInstance.transform.origin.move_toward(camera_path[camera_path_index], delta*3)
+	if $Root/MeshInstance.transform.origin.distance_to(camera_path[camera_path_index]) < 0.1:
+		camera_path_index+=1
+	pass
  
 func _ready():
+	
+	
+	
 	#randomize()
 	rand_seed(12345)
 	var map_dictionary = {}
@@ -53,7 +68,7 @@ func _ready():
 		map_dictionary[p7.round()] = "ROAD"
 		map_dictionary[p8.round()] = "ROAD"
 		map_dictionary[p9.round()] = "ROAD"
-		
+	print(str("Total Roads:", map_dictionary.size()))
 	var pavement_points = generate_pavement(map_dictionary)		
 	for p in pavement_points:
 		map_dictionary[p.round()] = "PAVEMENT"
@@ -242,70 +257,101 @@ func _ready():
 	$Root.add_child(mmi_roads)
 	$Root.add_child(mmi_pavement)
 	
-	var building_mesh = CubeMesh.new()
-	building_mesh.size = Vector3(1,4,1)
+#	var building_mesh = CubeMesh.new()
+#	building_mesh.size = Vector3(1,4,1)
+#
+#	var building_mat = SpatialMaterial.new()
+#	building_mat.vertex_color_use_as_albedo = true
+#	building_mat.flags_unshaded = false
+#
+#	var mmi_buiding = MultiMeshInstance.new()
+#	var mm_buiding = MultiMesh.new()
+#	mm_buiding.mesh = building_mesh
+#	mm_buiding.mesh.surface_set_material(0, building_mat)
+#	mm_buiding.transform_format = MultiMesh.TRANSFORM_3D
+#	mm_buiding.color_format = MultiMesh.COLOR_FLOAT
+#	mm_buiding.instance_count = 500000
+#	mm_buiding.visible_instance_count = 0
+#	mmi_buiding.multimesh = mm_buiding
+#
+#	var building_instance_count = 0
+#	for b in buildings:
+#		var building_block_points = buildings.get(b)
+#		var random_building_color = Color(randf(), randf(), randf())
+#		var random_height =1 + randi() % 3 
+#		for building_block_point in building_block_points:
+#			mm_buiding.set_instance_transform(building_instance_count, Transform(Basis(), building_block_point).scaled(Vector3(1, random_height, 1)))
+#			mm_buiding.set_instance_color(building_instance_count, random_building_color)
+#			building_instance_count += 1
+#	mm_buiding.visible_instance_count = building_instance_count
+#	$Root.add_child(mmi_buiding)
+#
+	var vehicle_astar : AStar = generate_astar_vehicle(map_dictionary)	
+	var point_list = vehicle_astar.get_points()
+	print("total astar points: ", point_list.size())
 	
-	var building_mat = SpatialMaterial.new()
-	building_mat.vertex_color_use_as_albedo = true
-	building_mat.flags_unshaded = false
+	var st_points = SurfaceTool.new()
+	st_points.begin(Mesh.PRIMITIVE_POINTS)
+	st_points.add_color(Color.yellow)
+	for p in point_list:
+		st_points.add_vertex(vehicle_astar.get_point_position(p) + Vector3(0, 0.3, 0))
 	
-	var mmi_buiding = MultiMeshInstance.new()
-	var mm_buiding = MultiMesh.new()
-	mm_buiding.mesh = building_mesh
-	mm_buiding.mesh.surface_set_material(0, building_mat)
-	mm_buiding.transform_format = MultiMesh.TRANSFORM_3D
-	mm_buiding.color_format = MultiMesh.COLOR_FLOAT
-	mm_buiding.instance_count = 500000
-	mm_buiding.visible_instance_count = 0
-	mmi_buiding.multimesh = mm_buiding
+	var start_point = point_list[randi() % point_list.size()]
+	var end_point = point_list[randi() % point_list.size()]	
+	var path = vehicle_astar.get_point_path(1, end_point)
 	
-	var building_instance_count = 0
-	for b in buildings:
-		var building_block_points = buildings.get(b)
-		var random_building_color = Color(randf(), randf(), randf())
-		var random_height =1 + randi() % 8 
-		for building_block_point in building_block_points:
-			mm_buiding.set_instance_transform(building_instance_count, Transform(Basis(), building_block_point).scaled(Vector3(1, random_height, 1)))
-			mm_buiding.set_instance_color(building_instance_count, random_building_color)
-			building_instance_count += 1
-	mm_buiding.visible_instance_count = building_instance_count
-	$Root.add_child(mmi_buiding)
+	st_points.add_color(Color.green)
+	st_points.add_vertex(path[0] + Vector3(0, 0.5, 0))
+	st_points.add_color(Color.red)
+	st_points.add_vertex(path[path.size()-1] + Vector3(0, 0.5, 0))
 	
-	var road_side_dictionary = generate_astar_vehicle(map_dictionary)
+	var st_lines = SurfaceTool.new()
+	st_lines.begin(Mesh.PRIMITIVE_LINES)
+	st_lines.add_color(Color.green)
+	var prev_p = path[0]
+	camera_path = path
+	for p in path:
+		st_lines.add_vertex(p + Vector3(0, 0.3, 0))
+		st_lines.add_vertex(prev_p + Vector3(0, 0.3, 0))
+		prev_p = p
 	
-	var st = SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_POINTS)
-
-	for side in road_side_dictionary.keys():
-		var prev_p = null
-		for p in road_side_dictionary.get(side):
-			if side == "LEFT":
-				st.add_color(Color.red)
-				st.add_vertex(p + Vector3(0,0.4,0))
-			elif side == "RIGHT":
-				st.add_color(Color.blue)	
-				st.add_vertex(p + Vector3(0,0.4,0))
-			elif side == "FORWARD":
-				st.add_color(Color.green)	
-				st.add_vertex(p + Vector3(0,0.4,0))
-			elif side == "BACK":
-				st.add_color(Color.yellow)	
-				st.add_vertex(p + Vector3(0,0.4,0))	
-	
+#	for road in road_side_dictionary.keys():
+#		var road_directions = road_side_dictionary.get(road)
+#		var road_ = road + Vector3(0, 0.4, 0)
+#		if road_directions.empty():
+#			st_lines.add_color(Color.red)
+#			st_lines.add_vertex(road_)
+#			st_lines.add_vertex(road_ + Vector3.UP)
+#		for p in road_directions:
+#			st_lines.add_color(Color.black)
+#			st_lines.add_vertex(road_)
+#			st_lines.add_color(Color.lightblue)
+#			st_lines.add_vertex(road_ + (p * 1))
+#
 	var debug_mat = SpatialMaterial.new()
 	debug_mat.vertex_color_use_as_albedo = true
 	debug_mat.flags_use_point_size = true
-	debug_mat.params_point_size = 5
-	debug_mat.flags_unshaded = true
-	
-	var debug_mesh = st.commit()
+	debug_mat.params_point_size = 3
+	debug_mat.flags_unshaded = true	
+#
+	var debug_mesh = st_points.commit()
 	var debug_mi = MeshInstance.new()
 	debug_mi.material_override = debug_mat
 	debug_mi.mesh = debug_mesh
+
+	var debug_mesh_path = st_lines.commit()
+	var debug_mi_path = MeshInstance.new()
+	debug_mi_path.material_override = debug_mat
+	debug_mi_path.mesh = debug_mesh_path
 	
 	$Root.add_child(debug_mi)
+	$Root.add_child(debug_mi_path)
+#
+#	mi_object.transform.origin = path[0]
+#	mi_object.mesh = CubeMap.new()
+#	mi_object.material_override = debug_mat
+#	$Root.add_child(mi_object)
 	
-
 func generate_roads(start_position, iterations, rule, length):
 	var arrangement = rule.axiom
 	for i in iterations:
@@ -330,10 +376,6 @@ func generate_roads(start_position, iterations, rule, length):
 					points.push_back(from)
 					points.push_back(to)
 					from = to
-#					to = from + Vector3(1, 0, 0).rotated(Vector3.UP, deg2rad(rot))
-#					points.push_back(from)
-#					points.push_back(to)
-#					from = to
 			"rotate_right":
 				if !chance_ignore():
 					rot += rule.angle
@@ -362,40 +404,157 @@ func generate_astar_pedestrian(map_dictionary):
 
 func generate_astar_vehicle(map_dictionary):
 	var road_side_dictionary = {}
-	var left = []
-	var right = []
-	var forward = []
-	var back = []
-	var astar = AStar2D.new()
+	var astar = AStar.new()
 	for p in map_dictionary.keys():
 		var type = map_dictionary.get(p)
 		if type == "ROAD":
 #			find side of road
-			var side = find_road_direction(map_dictionary, p)
-			if side == "LEFT":
-				left.push_back(p)
-			elif side == "RIGHT":
-				right.push_back(p)
-			elif side == "FORWARD":
-				forward.push_back(p)
-			elif side == "BACK":
-				back.push_back(p)
-	road_side_dictionary["LEFT"] = left
-	road_side_dictionary["RIGHT"] = right
-	road_side_dictionary["FORWARD"] = forward
-	road_side_dictionary["BACK"] = back
-	return road_side_dictionary
+			var directions = find_road_direction(map_dictionary, p)
+			
+			if !is_dictionary_empty(directions):
+				for point_direction in directions.keys():
+					if !road_side_dictionary.has(point_direction):
+						road_side_dictionary[point_direction] = []
+					road_side_dictionary[point_direction] += directions.get(point_direction)
+
+	print("road direction dictionary:", road_side_dictionary.size())
+	var id_list = {}
+	#create all points (that have directions)
+	for point in road_side_dictionary.keys():
+		
+		var id = generate_or_get_id_for_point(point, id_list)		
+		astar.add_point(id, point)
+	#create connections
+	for point in road_side_dictionary.keys():
+		var id = generate_or_get_id_for_point(point, id_list)		
+		for direction in road_side_dictionary.get(point):
+			var target_id = generate_or_get_id_for_point(point + direction, id_list)
+			astar.connect_points(id, target_id, false)
+	print("total id's in id_list:", id_list.size())
+	return astar
+	
+func generate_or_get_id_for_point(point, id_list):
+	if !id_list.has(point):
+		id_list[point] = id_list.size() + 1
+	return id_list[point]
+
+func is_dictionary_empty(dictionary):
+	var size = 0
+	for key in dictionary.keys():
+		var array = dictionary.get(key)
+		size += array.size()
+	return size == 0
 
 func find_road_direction(map_dictionary, p):
-	if map_dictionary.get(p + Vector3.LEFT)	== "PAVEMENT":
-		return "FORWARD"
-	elif map_dictionary.get(p + Vector3.RIGHT)	== "PAVEMENT":
-		return "BACK"
-	elif map_dictionary.get(p + Vector3.FORWARD) == "PAVEMENT":
-		return "RIGHT"
-	elif map_dictionary.get(p + Vector3.BACK) == "PAVEMENT":
-		return "LEFT"
-	return ""
+	var directions = {}
+	directions[p] = []
+	
+	var left = map_dictionary.get(p + Vector3.LEFT)
+	var right = map_dictionary.get(p + Vector3.RIGHT)
+	var forward = map_dictionary.get(p + Vector3.FORWARD)
+	var back = map_dictionary.get(p + Vector3.BACK)
+	
+	var left_back = map_dictionary.get(p + Vector3.LEFT + Vector3.BACK)
+	var right_back = map_dictionary.get(p + Vector3.RIGHT + Vector3.BACK)
+	var right_forward = map_dictionary.get(p + Vector3.RIGHT + Vector3.FORWARD)
+	var left_forward = map_dictionary.get(p + Vector3.LEFT + Vector3.FORWARD)
+	
+	var left_left =  map_dictionary.get(p + Vector3.LEFT + Vector3.LEFT)
+	var right_right =  map_dictionary.get(p + Vector3.RIGHT + Vector3.RIGHT)
+	var forward_forward =  map_dictionary.get(p + Vector3.FORWARD + Vector3.FORWARD)
+	var back_back =  map_dictionary.get(p + Vector3.BACK + Vector3.BACK)
+	var left_left_forward_forward =  map_dictionary.get(p + Vector3.LEFT + Vector3.LEFT + Vector3.FORWARD + Vector3.FORWARD)
+	var right_right_forward_forward =  map_dictionary.get(p + Vector3.RIGHT + Vector3.RIGHT + Vector3.FORWARD + Vector3.FORWARD)
+	var left_left_back_back =  map_dictionary.get(p + Vector3.LEFT + Vector3.LEFT + Vector3.BACK + Vector3.BACK)
+	var right_right_back_back =  map_dictionary.get(p + Vector3.RIGHT + Vector3.RIGHT + Vector3.BACK + Vector3.BACK)
+	
+	var forward_forward_left = map_dictionary.get(p + Vector3.FORWARD + Vector3.FORWARD + Vector3.LEFT)
+	var back_back_left = map_dictionary.get(p + Vector3.BACK + Vector3.BACK + Vector3.LEFT)
+	var left_left_forward = map_dictionary.get(p + Vector3.LEFT + Vector3.LEFT + Vector3.FORWARD)
+	
+	if left	== "PAVEMENT" and forward == "ROAD":
+		directions.get(p).push_back(Vector3.FORWARD)
+	elif right	== "PAVEMENT" and back == "ROAD":
+		directions.get(p).push_back(Vector3.BACK)
+	elif forward == "PAVEMENT" and right == "ROAD":
+		directions.get(p).push_back(Vector3.RIGHT)
+	elif back == "PAVEMENT" and left == "ROAD":
+		directions.get(p).push_back(Vector3.LEFT)
+	
+	## Directions relative to camera with no y-rotation. Forward - Back on Z-Axis. Left - Right on X-Axis
+	
+		## Forward -> Left
+	if left == "ROAD" and back == "ROAD" and left_back == "PAVEMENT":
+		directions.get(p).push_back(Vector3.LEFT)
+		## Back -> Right
+	elif right == "ROAD" and forward == "ROAD" and right_forward == "PAVEMENT":
+		directions.get(p).push_back(Vector3.RIGHT)
+		## Right -> Forward
+	elif forward == "ROAD" and left == "ROAD" and left_forward == "PAVEMENT":
+		directions.get(p).push_back(Vector3.FORWARD)
+		## Left -> Back
+	elif back == "ROAD" and right == "ROAD" and right_back == "PAVEMENT":
+		directions.get(p).push_back(Vector3.BACK)	
+
+	## centre of cross road
+	if left_left == "ROAD" and right_right == "ROAD" and forward_forward == "ROAD" and back_back == "ROAD" \
+	and left_left_forward_forward == "PAVEMENT" and right_right_forward_forward == "PAVEMENT" \
+	and left_left_back_back == "PAVEMENT" and right_right_back_back == "PAVEMENT":
+		directions[p + Vector3.BACK + Vector3.LEFT] = create_array_with_direction(Vector3.FORWARD)
+		directions[p + Vector3.LEFT] = create_array_with_direction(Vector3.FORWARD)
+		directions[p + Vector3.LEFT] += create_array_with_direction(Vector3.FORWARD + Vector3.RIGHT)
+		directions[p + Vector3.FORWARD] = create_array_with_direction(Vector3.RIGHT)
+		
+		directions[p + Vector3.FORWARD + Vector3.RIGHT] = create_array_with_direction(Vector3.BACK)
+		directions[p + Vector3.RIGHT] = create_array_with_direction(Vector3.BACK)
+		directions[p + Vector3.RIGHT] += create_array_with_direction(Vector3.BACK + Vector3.LEFT)
+		directions[p + Vector3.BACK] = create_array_with_direction(Vector3.LEFT)
+		
+		directions[p + Vector3.FORWARD + Vector3.LEFT] = create_array_with_direction(Vector3.RIGHT)
+		directions[p + Vector3.FORWARD] += create_array_with_direction(Vector3.BACK + Vector3.RIGHT)
+		
+		directions[p + Vector3.BACK + Vector3.RIGHT] = create_array_with_direction(Vector3.LEFT)
+		directions[p + Vector3.BACK] += create_array_with_direction(Vector3.FORWARD + Vector3.LEFT)
+		
+	## t-junction pointing Forward	
+	if left_left == "ROAD" and right_right == "ROAD" and forward_forward == "PAVEMENT" and back_back == "ROAD" \
+	 and left_left_back_back == "PAVEMENT" and right_right_back_back == "PAVEMENT":
+		directions[p + Vector3.BACK + Vector3.LEFT] = create_array_with_direction(Vector3.FORWARD)
+		directions[p + Vector3.LEFT] = create_array_with_direction(Vector3.FORWARD + Vector3.RIGHT)
+		directions[p + Vector3.BACK + Vector3.RIGHT] = create_array_with_direction(Vector3.LEFT)
+		directions[p + Vector3.BACK] = create_array_with_direction(Vector3.LEFT)
+
+	## t-junction pointing back
+	if left_left == "ROAD" and right_right == "ROAD" and back_back == "PAVEMENT" and forward_forward == "ROAD" \
+	 and left_left_forward_forward == "PAVEMENT" and right_right_forward_forward == "PAVEMENT":
+		directions[p + Vector3.FORWARD + Vector3.RIGHT] = create_array_with_direction(Vector3.BACK)
+		directions[p + Vector3.RIGHT] = create_array_with_direction(Vector3.BACK + Vector3.LEFT)
+		directions[p + Vector3.FORWARD + Vector3.LEFT] = create_array_with_direction(Vector3.RIGHT)
+		directions[p + Vector3.FORWARD] = create_array_with_direction(Vector3.RIGHT)
+	
+# t-junction pointing left
+	if back_back == "ROAD" and right_right == "ROAD" and left_left == "PAVEMENT" and forward_forward == "ROAD" \
+	 and right_right_forward_forward == "PAVEMENT" and right_right_back_back == "PAVEMENT":
+		directions[p + Vector3.BACK + Vector3.RIGHT] = create_array_with_direction(Vector3.LEFT)
+		directions[p + Vector3.BACK] = create_array_with_direction(Vector3.FORWARD + Vector3.LEFT)
+		directions[p + Vector3.FORWARD + Vector3.RIGHT] = create_array_with_direction(Vector3.BACK)
+		directions[p + Vector3.RIGHT] = create_array_with_direction(Vector3.BACK)
+		
+# t-junction pointing right
+	if back_back == "ROAD" and left_left == "ROAD" and right_right == "PAVEMENT" and forward_forward == "ROAD" \
+	 and left_left_forward_forward == "PAVEMENT" and left_left_back_back == "PAVEMENT":
+		directions[p + Vector3.FORWARD + Vector3.LEFT] = create_array_with_direction(Vector3.RIGHT)
+		directions[p + Vector3.FORWARD] = create_array_with_direction(Vector3.BACK + Vector3.RIGHT)
+		directions[p + Vector3.BACK + Vector3.LEFT] = create_array_with_direction(Vector3.FORWARD)
+		directions[p + Vector3.LEFT] = create_array_with_direction(Vector3.FORWARD)
+	
+	return directions
+
+func create_array_with_direction(direction):
+	var array = []
+	array.push_back(direction)
+	return array
+	
 func generate_pavement(road_dictionary):
 	var pavement_points = []
 	for p in road_dictionary.keys():
