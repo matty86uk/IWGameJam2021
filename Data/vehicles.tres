@@ -1,0 +1,64 @@
+{
+	[
+		{
+			"name":"deliveryTruck",
+			"occurence": 1.0
+			"scene": "delivery.tscn"
+		},
+		{
+			"name":"deliveryTruckFlat",
+			"occurence": 1.0
+			"scene": "deliveryFlat.tscn"
+		},
+		{
+			"name":"garbageTruck",
+			"occurence": 0.5
+			"scene": "garbageTruck.tscn"
+		},
+		{
+			"name":"hatchbackSport",
+			"occurence": 2.0
+			"scene": "hatchbackSports.tscn"
+		},
+		{
+			"name":"sedan",
+			"occurence": 4.0
+			"scene": "sedan.tscn"
+		},
+		{
+			"name":"sedanSport",
+			"occurence": 2.0
+			"scene": "sedanSports.tscn"
+		},
+		{
+			"name":"suv",
+			"occurence": 3.0
+			"scene": "suv.tscn"
+		},
+		{
+			"name":"suvLuxury",
+			"occurence": 1.0
+			"scene": "suvLuxury.tscn"
+		},
+		{
+			"name":"taxi",
+			"occurence": 4.0
+			"scene": "taxi.tscn"
+		},
+		{
+			"name":"truck",
+			"occurence": 3.0
+			"scene": "truck.tscn"
+		},
+		{
+			"name":"truckFlat",
+			"occurence": 3.0
+			"scene": "truckFlat.tscn"
+		},
+		{
+			"name":"van",
+			"occurence": 4.0
+			"scene": "van.tscn"
+		}
+	]
+}

@@ -1,0 +1,11 @@
+3844edc3d1660e6e25a999aafc25a878
+::res://::1617207040
+default_env.tres::Environment::1617195495::0::1::::<><>::
+favicon.png::StreamTexture2D::1617195341::1617207210::1::::<><>::
+icon.png::StreamTexture2D::1616448302::1617207210::1::::<><>::
+Main.tscn::PackedScene::1616530685::0::1::::<><>::
+::res://Scenes/::1617207026
+Map.gd::GDScript::1616620223::0::1::::Map<>Resource<>::
+Root.gd::GDScript::1617058363::0::1::::<>Spatial<>::
+World.gd::GDScript::1617204596::0::1::::<>Spatial3D<>::
+World.tscn::PackedScene::1617204546::0::1::::<><>::res://Scenes/World.gd<>res://Scenes/Root.gd

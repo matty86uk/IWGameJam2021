@@ -1,5 +1,7 @@
 extends Spatial
 
+var entities = load("res://Scenes/Entities.tscn").instance()
+
 var size_x
 var size_z
 
@@ -11,12 +13,6 @@ var grass_colors = [
 ]
 
 var building_colors = [
-#	Color8(255, 154, 162),
-#	Color8(255, 183, 178),
-#	Color8(255, 218, 193),
-#	Color8(226, 240, 203),
-#	Color8(181, 234, 215),
-#	Color8(199, 206, 234)
 	Color.red.darkened(0.5),
 	Color.blue.darkened(0.5),
 	Color.yellow.darkened(0.5),
@@ -26,22 +22,29 @@ var building_colors = [
 ]
 
 var pedestrian_astar = AStar2D.new()
-
+var vehicle_astar = AStar.new()
+var vehicle_points = []
 var camera_path_index = 0
 var camera_path = []
 
 var mi_object = MeshInstance.new()
 
 func _process(delta):
-	#$Camera.look_at_from_position(camera_path[camera_path_index] + Vector3(0, 50, 0), camera_path[camera_path_index], Vector3.UP)	
-	$Root/MeshInstance.transform.origin = $Root/MeshInstance.transform.origin.move_toward(camera_path[camera_path_index], delta*3)
+	if (camera_path_index == camera_path.size()):
+		print("Changing Path")
+		var start_point = vehicle_astar.get_closest_point($Root/MeshInstance.transform.origin.round())
+		var end_point = vehicle_points[randi() % vehicle_points.size() - 1]
+		camera_path_index = 0
+		camera_path = vehicle_astar.get_point_path(start_point, end_point)
+		#render_path()
+	$Root/MeshInstance.transform.origin = $Root/MeshInstance.transform.origin.move_toward(camera_path[camera_path_index], delta * 50)
 	if $Root/MeshInstance.transform.origin.distance_to(camera_path[camera_path_index]) < 0.1:
 		camera_path_index+=1
 	pass
- 
-func _ready():
 	
-	
+func _ready():	
+	entities.add_entity_type("vehicle", ["sedan", "suv"], [load("res://Models/Vehicles/sedan.tscn"), load("res://Models/Vehicles/suv.tscn")])	
+	entities.add_entity("vehicle","sedan", Vector3(-10,1,0))
 	
 	#randomize()
 	rand_seed(12345)
@@ -72,7 +75,10 @@ func _ready():
 	var pavement_points = generate_pavement(map_dictionary)		
 	for p in pavement_points:
 		map_dictionary[p.round()] = "PAVEMENT"
-	
+
+	vehicle_astar = generate_astar_vehicle(map_dictionary)	
+	vehicle_points = vehicle_astar.get_points()
+
 	var building_points = generate_buildings(map_dictionary)
 	var total_buiilding_points = Vector3(0,0,0)
 	for p in building_points:
@@ -158,17 +164,7 @@ func _ready():
 	print(max_z)
 	print(min_z)
 
-#	var x_size = max_x - min_x
-#	var z_size = max_z - min_z
-
-	var vert = 0
-
-	
-#	min_z = 0
-#	min_x = 0
-#	max_x = 1
-#	max_z = 1
-	
+	var vert = 0	
 	var x_size = (max_x - min_x)
 	var z_size = (max_z - min_z) 
 	print(x_size)
@@ -215,8 +211,10 @@ func _ready():
 	mat.params_point_size = 5
 	mat.params_cull_mode = SpatialMaterial.CULL_DISABLED
 	m.mesh = arr_mesh
+	m.create_trimesh_collision()
 	#m.material_override = mat
 	m.set_surface_material(0, mat)	
+	m.add_child(entities)
 	$Root.add_child(m)
 	
 	var mmi_roads = MultiMeshInstance.new()
@@ -286,72 +284,31 @@ func _ready():
 #	mm_buiding.visible_instance_count = building_instance_count
 #	$Root.add_child(mmi_buiding)
 #
-	var vehicle_astar : AStar = generate_astar_vehicle(map_dictionary)	
-	var point_list = vehicle_astar.get_points()
-	print("total astar points: ", point_list.size())
-	
-	var st_points = SurfaceTool.new()
-	st_points.begin(Mesh.PRIMITIVE_POINTS)
-	st_points.add_color(Color.yellow)
-	for p in point_list:
-		st_points.add_vertex(vehicle_astar.get_point_position(p) + Vector3(0, 0.3, 0))
-	
-	var start_point = point_list[randi() % point_list.size()]
-	var end_point = point_list[randi() % point_list.size()]	
-	var path = vehicle_astar.get_point_path(1, end_point)
-	
-	st_points.add_color(Color.green)
-	st_points.add_vertex(path[0] + Vector3(0, 0.5, 0))
-	st_points.add_color(Color.red)
-	st_points.add_vertex(path[path.size()-1] + Vector3(0, 0.5, 0))
-	
-	var st_lines = SurfaceTool.new()
-	st_lines.begin(Mesh.PRIMITIVE_LINES)
-	st_lines.add_color(Color.green)
-	var prev_p = path[0]
-	camera_path = path
-	for p in path:
-		st_lines.add_vertex(p + Vector3(0, 0.3, 0))
-		st_lines.add_vertex(prev_p + Vector3(0, 0.3, 0))
-		prev_p = p
-	
-#	for road in road_side_dictionary.keys():
-#		var road_directions = road_side_dictionary.get(road)
-#		var road_ = road + Vector3(0, 0.4, 0)
-#		if road_directions.empty():
-#			st_lines.add_color(Color.red)
-#			st_lines.add_vertex(road_)
-#			st_lines.add_vertex(road_ + Vector3.UP)
-#		for p in road_directions:
-#			st_lines.add_color(Color.black)
-#			st_lines.add_vertex(road_)
-#			st_lines.add_color(Color.lightblue)
-#			st_lines.add_vertex(road_ + (p * 1))
-#
+
+
+func render_path():
+	var existing = $Root.find_node("Path")
+	if existing != null:
+		$Root.remove_child(existing)
 	var debug_mat = SpatialMaterial.new()
 	debug_mat.vertex_color_use_as_albedo = true
 	debug_mat.flags_use_point_size = true
-	debug_mat.params_point_size = 3
-	debug_mat.flags_unshaded = true	
-#
-	var debug_mesh = st_points.commit()
-	var debug_mi = MeshInstance.new()
-	debug_mi.material_override = debug_mat
-	debug_mi.mesh = debug_mesh
-
+	debug_mat.flags_unshaded = true
+	var st_lines = SurfaceTool.new()
+	st_lines.begin(Mesh.PRIMITIVE_LINES)
+	st_lines.add_color(Color.green)
+	var prev_p = camera_path[0]	
+	for p in camera_path:
+		st_lines.add_vertex(p + Vector3(0, 0.3, 0))
+		st_lines.add_vertex(prev_p + Vector3(0, 0.3, 0))
+		prev_p = p
 	var debug_mesh_path = st_lines.commit()
 	var debug_mi_path = MeshInstance.new()
+	debug_mi_path.name="Path"
 	debug_mi_path.material_override = debug_mat
 	debug_mi_path.mesh = debug_mesh_path
-	
-	$Root.add_child(debug_mi)
 	$Root.add_child(debug_mi_path)
-#
-#	mi_object.transform.origin = path[0]
-#	mi_object.mesh = CubeMap.new()
-#	mi_object.material_override = debug_mat
-#	$Root.add_child(mi_object)
-	
+
 func generate_roads(start_position, iterations, rule, length):
 	var arrangement = rule.axiom
 	for i in iterations:
@@ -422,11 +379,11 @@ func generate_astar_vehicle(map_dictionary):
 	#create all points (that have directions)
 	for point in road_side_dictionary.keys():
 		
-		var id = generate_or_get_id_for_point(point, id_list)		
+		var id = generate_or_get_id_for_point(point, id_list)
 		astar.add_point(id, point)
 	#create connections
 	for point in road_side_dictionary.keys():
-		var id = generate_or_get_id_for_point(point, id_list)		
+		var id = generate_or_get_id_for_point(point, id_list)
 		for direction in road_side_dictionary.get(point):
 			var target_id = generate_or_get_id_for_point(point + direction, id_list)
 			astar.connect_points(id, target_id, false)
