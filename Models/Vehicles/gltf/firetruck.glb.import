@@ -2,30 +2,30 @@
 
 importer="scene"
 type="PackedScene"
-path="res://.import/sedan.glb-2f740fc7a2db463935e7d6637b39f1cc.scn"
+path="res://.import/firetruck.glb-fce704a50dd1a18925ae1429d8c96c36.scn"
 
 [deps]
 
-source_file="res://Models/Vehicles/sedan.glb"
-dest_files=[ "res://.import/sedan.glb-2f740fc7a2db463935e7d6637b39f1cc.scn" ]
+source_file="res://Models/Vehicles/gltf/firetruck.glb"
+dest_files=[ "res://.import/firetruck.glb-fce704a50dd1a18925ae1429d8c96c36.scn" ]
 
 [params]
 
-nodes/root_type="VehicleBody"
+nodes/root_type="Spatial"
 nodes/root_name="Scene Root"
 nodes/root_scale=1.0
 nodes/custom_script=""
 nodes/storage=0
 materials/location=1
-materials/storage=0
+materials/storage=1
 materials/keep_on_reimport=true
 meshes/compress=true
 meshes/ensure_tangents=true
 meshes/storage=0
-meshes/light_baking=2
+meshes/light_baking=0
 meshes/lightmap_texel_size=0.1
 skins/use_named_skins=true
-external_files/store_in_subdir=true
+external_files/store_in_subdir=false
 animation/import=true
 animation/fps=15
 animation/filter_script=""

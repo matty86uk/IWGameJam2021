@@ -30,21 +30,22 @@ var camera_path = []
 var mi_object = MeshInstance.new()
 
 func _process(delta):
-	if (camera_path_index == camera_path.size()):
-		print("Changing Path")
-		var start_point = vehicle_astar.get_closest_point($Root/MeshInstance.transform.origin.round())
-		var end_point = vehicle_points[randi() % vehicle_points.size() - 1]
-		camera_path_index = 0
-		camera_path = vehicle_astar.get_point_path(start_point, end_point)
-		#render_path()
-	$Root/MeshInstance.transform.origin = $Root/MeshInstance.transform.origin.move_toward(camera_path[camera_path_index], delta * 50)
-	if $Root/MeshInstance.transform.origin.distance_to(camera_path[camera_path_index]) < 0.1:
-		camera_path_index+=1
 	pass
+#	if (camera_path_index == camera_path.size()):
+#		print("Changing Path")
+#		var start_point = vehicle_astar.get_closest_point($Root/MeshInstance.transform.origin.round())
+#		var end_point = vehicle_points[randi() % vehicle_points.size() - 1]
+#		camera_path_index = 0
+#		camera_path = vehicle_astar.get_point_path(start_point, end_point)
+#		#render_path()
+#	$Root/MeshInstance.transform.origin = $Root/MeshInstance.transform.origin.move_toward(camera_path[camera_path_index], delta * 50)
+#	if $Root/MeshInstance.transform.origin.distance_to(camera_path[camera_path_index]) < 0.1:
+#		camera_path_index+=1
+#	pass
 	
 func _ready():	
 	entities.add_entity_type("vehicle", ["sedan", "suv"], [load("res://Models/Vehicles/sedan.tscn"), load("res://Models/Vehicles/suv.tscn")])	
-	entities.add_entity("vehicle","sedan", Vector3(-10,1,0))
+	entities.add_entity("vehicle","sedan", Vector3(-10,0.5,0))
 	
 	#randomize()
 	rand_seed(12345)

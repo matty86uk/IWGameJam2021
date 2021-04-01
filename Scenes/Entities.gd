@@ -52,11 +52,11 @@ func add_entity(type, subtype, position):
 	#new_entity.transform = new_entity.transform.scaled(Vector3(0.5,0.5,0.5))
 	
 	#new_entity.sleeping = true
-	new_entity.steering = -0.1
-	new_entity.engine_force = 500
+	#new_entity.steering = -0.1
+	new_entity.engine_force = 400
 	add_child(new_entity)
 	
 func _physics_process(delta):
-	
+	#get_children()[0].engine_force = 100
 	pass
 	
