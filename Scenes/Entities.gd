@@ -1,8 +1,8 @@
-extends Spatial
+extends Node
 
-var base_vehicle = preload("res://Models/Vehicles/BaseVehicle.tscn")
-var base_vehicle_rigid = preload("res://Models/Vehicles/BaseVehicleRigid.tscn")
-var base_vehicle_gsai = preload("res://Models/Vehicles/BaseVehicleGSAI.tscn")
+var base_vehicle = preload("res://Entities/BaseVehicle.tscn")
+var base_vehicle_rigid = preload("res://Entities/BaseVehicleRigid.tscn")
+var base_vehicle_gsai = preload("res://Entities/BaseVehicleGSAI.tscn")
 
 var entity_types = {}
 var entities = {}
@@ -45,7 +45,7 @@ func add_entity_type_astar(type, astar, astar_points):
 
 func add_entity(type, subtype, position):
 	var new_vehicle = base_vehicle.instance()
-	new_vehicle.transform = Transform(Basis(), position)
+	new_vehicle.transform = Transform(Basis(), position)	
 	var new_entity_scene = entity_types[type][subtype]["scene"].instance()
 	for child in new_entity_scene.get_children():
 		new_entity_scene.remove_child(child)
@@ -64,18 +64,26 @@ func _process(delta):
 			vehicle.STATE_INSTANCED:
 				next_vehicle_state = vehicle.STATE_READY
 			vehicle.STATE_READY:
-				var path = generate_vehicle_path(vehicle.transform.origin)
+				var path = generate_vehicle_path(vehicle.global_transform.origin)
 				vehicle.path_index = 0
 				if path.size() > 0:
 					vehicle.set_path(path)
 					next_vehicle_state = vehicle.STATE_HAS_ORDERS
-				else:
-					pass
+				else:				
+					print("No path")
+					var new_path = []
+					new_path.push_back(vehicle.transform.origin)
+					new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD))
+					new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD * 2))
+					new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD * 3))
+					new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD * 4))
+					vehicle.set_path(new_path)
+					next_vehicle_state = vehicle.STATE_HAS_ORDERS
 			vehicle.STATE_HAS_ORDERS:
 #				vehicle.path_index = 0
 				#debug_show_path(vehicle)
-				next_vehicle_state = vehicle.STATE_MOVING
-			vehicle.STATE_MOVING:
+				next_vehicle_state = vehicle.STATE_ENABLED
+			vehicle.STATE_ENABLED:
 				#pass
 				move_vehicle(vehicle)
 		if next_vehicle_state:
@@ -114,14 +122,12 @@ func debug_show_path(vehicle):
 func move_vehicle(vehicle):
 	pass
 	if vehicle.path.size() > 0 and  vehicle.path_index < vehicle.path.size():
-
 		var target = vehicle.path[vehicle.path_index]
 		var from = vehicle.get_global_transform().origin
-
 		if from.distance_squared_to(target) < 1:
 			vehicle.path_index += 1
 		else:
-			vehicle.power()
+			vehicle.forward()
 	else:
 		vehicle.state = vehicle.STATE_READY
 

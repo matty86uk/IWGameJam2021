@@ -44,7 +44,7 @@ func _process(delta):
 #	pass
 	
 func _ready():	
-	entities.add_entity_type("vehicle", ["sedan", "suv"], [load("res://Models/Vehicles/sedan.tscn"), load("res://Models/Vehicles/suv.tscn")])	
+	entities.add_entity_type("vehicle", ["sedan", "suv"], [load("res://Entities/Vehicles/sedan.tscn"), load("res://Models/Vehicles/suv.tscn")])	
 	
 #	for i in range(10):
 #		entities.add_entity("vehicle","sedan", Vector3(-54 - (i * 2),10,0))
@@ -260,38 +260,38 @@ func _ready():
 	$Root.add_child(mmi_roads)
 	$Root.add_child(mmi_pavement)
 	
-	for i in range(50):
+	for i in range(200):
 		entities.add_entity("vehicle","sedan", vehicle_astar.get_point_position(vehicle_points[randi() % vehicle_points.size()-1]))
 	
-	
-#	var building_mesh = CubeMesh.new()
-#	building_mesh.size = Vector3(1,4,1)
+
+	var building_mesh = CubeMesh.new()
+	building_mesh.size = Vector3(1,4,1)
 #
-#	var building_mat = SpatialMaterial.new()
-#	building_mat.vertex_color_use_as_albedo = true
-#	building_mat.flags_unshaded = false
+	var building_mat = SpatialMaterial.new()
+	building_mat.vertex_color_use_as_albedo = true
+	building_mat.flags_unshaded = false
 #
-#	var mmi_buiding = MultiMeshInstance.new()
-#	var mm_buiding = MultiMesh.new()
-#	mm_buiding.mesh = building_mesh
-#	mm_buiding.mesh.surface_set_material(0, building_mat)
-#	mm_buiding.transform_format = MultiMesh.TRANSFORM_3D
-#	mm_buiding.color_format = MultiMesh.COLOR_FLOAT
-#	mm_buiding.instance_count = 500000
-#	mm_buiding.visible_instance_count = 0
-#	mmi_buiding.multimesh = mm_buiding
+	var mmi_buiding = MultiMeshInstance.new()
+	var mm_buiding = MultiMesh.new()
+	mm_buiding.mesh = building_mesh
+	mm_buiding.mesh.surface_set_material(0, building_mat)
+	mm_buiding.transform_format = MultiMesh.TRANSFORM_3D
+	mm_buiding.color_format = MultiMesh.COLOR_FLOAT
+	mm_buiding.instance_count = 500000
+	mm_buiding.visible_instance_count = 0
+	mmi_buiding.multimesh = mm_buiding
 #
-#	var building_instance_count = 0
-#	for b in buildings:
-#		var building_block_points = buildings.get(b)
-#		var random_building_color = Color(randf(), randf(), randf())
-#		var random_height =1 + randi() % 3 
-#		for building_block_point in building_block_points:
-#			mm_buiding.set_instance_transform(building_instance_count, Transform(Basis(), building_block_point).scaled(Vector3(1, random_height, 1)))
-#			mm_buiding.set_instance_color(building_instance_count, random_building_color)
-#			building_instance_count += 1
-#	mm_buiding.visible_instance_count = building_instance_count
-#	$Root.add_child(mmi_buiding)
+	var building_instance_count = 0
+	for b in buildings:
+		var building_block_points = buildings.get(b)
+		var random_building_color = Color(randf(), randf(), randf())
+		var random_height =1 + randi() % 3 
+		for building_block_point in building_block_points:
+			mm_buiding.set_instance_transform(building_instance_count, Transform(Basis(), building_block_point).scaled(Vector3(1, random_height, 1)))
+			mm_buiding.set_instance_color(building_instance_count, random_building_color)
+			building_instance_count += 1
+	mm_buiding.visible_instance_count = building_instance_count
+	$Root.add_child(mmi_buiding)
 #
 
 

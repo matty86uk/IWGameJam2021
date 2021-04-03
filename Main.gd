@@ -11,7 +11,7 @@ func _ready():
 	add_child(game)
 
 func load_vehicle_scenes():
-	return load_directory("res://Models/Vehicles", ".tscn")
+	return load_directory("res://Vehicles/Vehicles", ".tscn")
 
 func load_directory(path, extension):
 	var dictionary = {}
