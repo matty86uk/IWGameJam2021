@@ -5,6 +5,7 @@
 
 [sub_resource type="Environment" id=1]
 ambient_light_color = Color( 1, 1, 1, 1 )
+ambient_light_energy = 2.0
 
 [sub_resource type="CubeMesh" id=2]
 
@@ -13,10 +14,11 @@ vertex_color_use_as_albedo = true
 albedo_color = Color( 0, 0.227451, 1, 1 )
 
 [node name="World" type="Spatial"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0245514, 0, 0.0143661 )
 script = ExtResource( 1 )
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 10 )
+transform = Transform( 1, 0, 0, 0, 0.0871556, 0.996195, 0, -0.996195, 0.0871556, 0, 50, -50 )
 environment = SubResource( 1 )
 near = 0.01
 far = 8192.0

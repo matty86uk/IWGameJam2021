@@ -38,19 +38,21 @@ func _process(delta):
 #		camera_path_index = 0
 #		camera_path = vehicle_astar.get_point_path(start_point, end_point)
 #		#render_path()
-#	$Root/MeshInstance.transform.origin = $Root/MeshInstance.transform.origin.move_toward(camera_path[camera_path_index], delta * 50)
+#	$Root/MeshInstance.transform.origin = $Root/MeshInstance.transform.origin.move_toward(camera_path[camera_path_index], delta * 5)
 #	if $Root/MeshInstance.transform.origin.distance_to(camera_path[camera_path_index]) < 0.1:
 #		camera_path_index+=1
 #	pass
 	
 func _ready():	
 	entities.add_entity_type("vehicle", ["sedan", "suv"], [load("res://Models/Vehicles/sedan.tscn"), load("res://Models/Vehicles/suv.tscn")])	
-	entities.add_entity("vehicle","sedan", Vector3(-10,0.5,0))
+	
+#	for i in range(10):
+#		entities.add_entity("vehicle","sedan", Vector3(-54 - (i * 2),10,0))
 	
 	#randomize()
 	rand_seed(12345)
 	var map_dictionary = {}
-	var points = generate_roads(Vector3(0,0,0), 3, SimpleRoads.new(), 3)
+	var points = generate_roads(Vector3(0,0,0), 2, SimpleRoads.new(), 3)
 
 	for p in points: 
 		var p1 = p*3+(Vector3(-1,0,1))
@@ -79,6 +81,8 @@ func _ready():
 
 	vehicle_astar = generate_astar_vehicle(map_dictionary)	
 	vehicle_points = vehicle_astar.get_points()
+
+	entities.add_entity_type_astar("vehicle", vehicle_astar, vehicle_points)
 
 	var building_points = generate_buildings(map_dictionary)
 	var total_buiilding_points = Vector3(0,0,0)
@@ -155,10 +159,10 @@ func _ready():
 		if (p.z < min_z):
 			min_z = p.z
 #
-#	min_x -= 100
-#	max_x += 100
-#	min_z -= 100
-#	max_z += 100
+	min_x -= 100
+	max_x += 100
+	min_z -= 100
+	max_z += 100
 
 	print(max_x)
 	print(min_x)
@@ -214,7 +218,7 @@ func _ready():
 	m.mesh = arr_mesh
 	m.create_trimesh_collision()
 	#m.material_override = mat
-	m.set_surface_material(0, mat)	
+	m.set_surface_material(0, mat)
 	m.add_child(entities)
 	$Root.add_child(m)
 	
@@ -255,6 +259,10 @@ func _ready():
 	mm_pavement.visible_instance_count = pavement_instance_count
 	$Root.add_child(mmi_roads)
 	$Root.add_child(mmi_pavement)
+	
+	for i in range(50):
+		entities.add_entity("vehicle","sedan", vehicle_astar.get_point_position(vehicle_points[randi() % vehicle_points.size()-1]))
+	
 	
 #	var building_mesh = CubeMesh.new()
 #	building_mesh.size = Vector3(1,4,1)
@@ -598,7 +606,7 @@ class SimpleRoads extends Rule:
 		self.axiom = "F"
 		self.angle = 90
 		self.rules = {
-			"F":"FF+[+F-F-F]-[-F+F+F]"
+			"F":"FF+[+F-F-F+F+F]-[-F+F+F-F-F]-[+FF]"
 		}
 		self.actions = {
 			"F" : "draw_forward",
