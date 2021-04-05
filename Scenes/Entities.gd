@@ -1,13 +1,15 @@
 extends Node
 
+var base_pedestrian = preload("res://Entities/BasePedestrian.tscn")
 var base_vehicle = preload("res://Entities/BaseVehicle.tscn")
-var base_vehicle_rigid = preload("res://Entities/BaseVehicleRigid.tscn")
-var base_vehicle_gsai = preload("res://Entities/BaseVehicleGSAI.tscn")
+#var base_vehicle_rigid = preload("res://Entities/BaseVehicleRigid.tscn")
+#var base_vehicle_gsai = preload("res://Entities/BaseVehicleGSAI.tscn")
 
 var entity_types = {}
 var entities = {}
 
 var vehicles = []
+var pedestrians = []
 
 var astar_dictionary = {}
 var astar_points_dictionary = {}
@@ -44,6 +46,12 @@ func add_entity_type_astar(type, astar, astar_points):
 	astar_points_dictionary[type] = astar_points
 
 func add_entity(type, subtype, position):
+	if type == "vehicle":
+		add_vehicle(type, subtype, position)
+	elif type == "pedestrian":
+		add_pedestrian(type, subtype, position)
+
+func add_vehicle(type, subtype, position):
 	var new_vehicle = base_vehicle.instance()
 	new_vehicle.transform = Transform(Basis(), position)	
 	var new_entity_scene = entity_types[type][subtype]["scene"].instance()
@@ -53,8 +61,17 @@ func add_entity(type, subtype, position):
 	new_vehicle.state = new_vehicle.STATE_INSTANCED	
 	add_child(new_vehicle)	
 	vehicles.push_back(new_vehicle)
-	
-	
+
+func add_pedestrian(type, subtype, position):
+	var new_pedestrian = base_pedestrian.instance()
+	new_pedestrian.transform = Transform(Basis(), position)
+	var new_entity_scene = entity_types[type][subtype]["scene"].instance()
+	for child in new_entity_scene.get_children():
+		new_entity_scene.remove_child(child)
+		new_pedestrian.add_child(child)
+	new_pedestrian.state = new_pedestrian.STATE_INSTANCED
+	add_child(new_pedestrian)
+	pedestrians.push_back(new_pedestrian)	
 	
 func _process(delta):
 	for vehicle in vehicles:

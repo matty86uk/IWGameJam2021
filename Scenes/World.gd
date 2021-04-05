@@ -45,7 +45,7 @@ func _process(delta):
 	
 func _ready():	
 	entities.add_entity_type("vehicle", ["sedan", "suv"], [load("res://Entities/Vehicles/sedan.tscn"), load("res://Models/Vehicles/suv.tscn")])	
-	
+	entities.add_entity_type("pedestrian", ["pineapple"], [load("res://Entities/Pedestrians/pineapple.tscn")])
 #	for i in range(10):
 #		entities.add_entity("vehicle","sedan", Vector3(-54 - (i * 2),10,0))
 	
@@ -81,9 +81,29 @@ func _ready():
 
 	vehicle_astar = generate_astar_vehicle(map_dictionary)	
 	vehicle_points = vehicle_astar.get_points()
-
+	
+	pedestrian_astar = generate_astar_pedestrian(map_dictionary)
+	var pavement_astar_points = pedestrian_astar.get("pavement")
+	var mi_pedestrian = MeshInstance.new()
+	var st_pedestrian = SurfaceTool.new()
+	st_pedestrian.begin(Mesh.PRIMITIVE_POINTS)
+	st_pedestrian.add_color(Color.purple)
+	for p in pavement_astar_points:
+		st_pedestrian.add_vertex(p + Vector3.UP)
+	
+	var mesh_pedestrian = st_pedestrian.commit()
+	var mat_pedestrian = SpatialMaterial.new()
+	mat_pedestrian.vertex_color_use_as_albedo = true
+	mat_pedestrian.params_point_size = 4
+	mat_pedestrian.flags_use_point_size = true
+	
+	mi_pedestrian.mesh = mesh_pedestrian
+	mi_pedestrian.material_override = mat_pedestrian
+	add_child(mi_pedestrian)
+	
+	
 	entities.add_entity_type_astar("vehicle", vehicle_astar, vehicle_points)
-
+	
 	var building_points = generate_buildings(map_dictionary)
 	var total_buiilding_points = Vector3(0,0,0)
 	for p in building_points:
@@ -177,7 +197,9 @@ func _ready():
 	var z_pos = 0
 	var x_pos = 0
 	
-	var vertices_terrain  : PoolVector3Array	
+	
+	var vertices_terrain  : PoolVector3Array
+	var verticies_terrain_collision : PoolVector3Array
 	var indexes_terrain : PoolIntArray
 	var normals_terrain : PoolVector3Array
 	
@@ -185,6 +207,13 @@ func _ready():
 		for x in range(min_x, max_x + 1):
 			vertices_terrain.push_back(Vector3(x, 0, z))
 			normals_terrain.push_back(Vector3.UP)
+			var y = 0
+			var type = map_dictionary.get(Vector3(x, 0, z))
+			if type == "PAVEMENT":
+				y = 0.1
+			elif type == "ROAD":
+				y = 0.05
+			verticies_terrain_collision.push_back(Vector3(x, y, z))
 			
 			if x_pos < x_size and z_pos < z_size:
 				indexes_terrain.push_back(vert + 0)
@@ -198,6 +227,7 @@ func _ready():
 		x_pos=0
 		z_pos+=1
 		
+	
 	var arr_mesh = ArrayMesh.new()
 	var arrays = []
 	arrays.resize(ArrayMesh.ARRAY_MAX)
@@ -205,8 +235,16 @@ func _ready():
 	arrays[ArrayMesh.ARRAY_INDEX] = indexes_terrain
 	arrays[ArrayMesh.ARRAY_NORMAL] = normals_terrain
 #	arrays[ArrayMesh.ARRAY_COLOR] = colors
+
+	var arr_mesh_collision = ArrayMesh.new()
+	var arrays_collision = []
+	arrays_collision.resize(ArrayMesh.ARRAY_MAX)
+	arrays_collision[ArrayMesh.ARRAY_VERTEX] = verticies_terrain_collision
+	arrays_collision[ArrayMesh.ARRAY_INDEX] = indexes_terrain
 	
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	arr_mesh_collision.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays_collision)
+	
 	var m = MeshInstance.new()
 	var mat = SpatialMaterial.new()
 	mat.vertex_color_is_srgb = true
@@ -216,11 +254,20 @@ func _ready():
 	mat.params_point_size = 5
 	mat.params_cull_mode = SpatialMaterial.CULL_DISABLED
 	m.mesh = arr_mesh
-	m.create_trimesh_collision()
+	#m.create_trimesh_collision()
 	#m.material_override = mat
+	m.name="floor"
 	m.set_surface_material(0, mat)
 	m.add_child(entities)
 	$Root.add_child(m)
+	
+	
+	var m_collision = MeshInstance.new()
+	m_collision.mesh = arr_mesh_collision
+	m_collision.create_trimesh_collision()
+	m_collision.name = "floor_collision"
+	m_collision.visible = false
+	$Root.add_child(m_collision)
 	
 	var mmi_roads = MultiMeshInstance.new()
 	var mm_roads = MultiMesh.new()
@@ -263,6 +310,8 @@ func _ready():
 	for i in range(200):
 		entities.add_entity("vehicle","sedan", vehicle_astar.get_point_position(vehicle_points[randi() % vehicle_points.size()-1]))
 	
+	for i in range(500):
+		entities.add_entity("pedestrian", "pineapple", pavement_astar_points[randi() % pavement_astar_points.size()] + (Vector3.UP * 2) + Vector3.FORWARD )
 
 	var building_mesh = CubeMesh.new()
 	building_mesh.size = Vector3(1,4,1)
@@ -364,10 +413,6 @@ func chance_ignore():
 func random_color(colors):
 	return colors[randi() % colors.size()]
 
-func generate_astar_pedestrian(map_dictionary):
-	var astar = AStar2D.new()	
-	pass
-
 func generate_astar_vehicle(map_dictionary):
 	var road_side_dictionary = {}
 	var astar = AStar.new()
@@ -398,6 +443,29 @@ func generate_astar_vehicle(map_dictionary):
 			astar.connect_points(id, target_id, false)
 	print("total id's in id_list:", id_list.size())
 	return astar
+
+func generate_astar_pedestrian(map_dictionary):
+	var pavement_dictionary = {}
+	var pavement_array = []
+	var crossing_array = []
+	for p in map_dictionary.keys():
+		var type = map_dictionary.get(p)
+		if type == "PAVEMENT":
+			var p1 = p + Vector3.FORWARD/3
+			var p2 = p + Vector3.BACK/3
+			var p3 = p + Vector3.LEFT/3
+			var p4 = p + Vector3.RIGHT/3
+			
+			var p5 = p + Vector3.FORWARD/3 + Vector3.LEFT/3
+			var p6 = p + Vector3.FORWARD/3 + Vector3.LEFT/3
+			
+			pavement_array.push_back(p)
+			pavement_array.push_back(p1)
+			pavement_array.push_back(p2)
+			pavement_array.push_back(p3)
+			pavement_array.push_back(p4)
+	pavement_dictionary["pavement"] = pavement_array
+	return pavement_dictionary
 	
 func generate_or_get_id_for_point(point, id_list):
 	if !id_list.has(point):
