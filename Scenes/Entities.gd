@@ -7,6 +7,8 @@ var base_vehicle = preload("res://Entities/BaseVehicle.tscn")
 
 var entity_types = {}
 var entities = {}
+var entity_mmi = {}
+var entity_mm = {}
 
 var vehicles = []
 var pedestrians = []
@@ -29,16 +31,45 @@ func add_entity_type(type, subtypes, scenes):
 	var entities_subtypes_dictionary = {}
 	entities[type] = entities_subtypes_dictionary
 	
+	var mm_subtypes_dictionary = {}
+	entity_mm[type] = mm_subtypes_dictionary
+	
+	var mmi_subtypes_dictionary = {}
+	entity_mmi[type] = mmi_subtypes_dictionary
+	
 	var index=0
 	for subtype in subtypes:
 		##types dictionary
 		var subtype_dictionary = {}
 		subtype_dictionary["scene"] = scenes[index]
+		subtype_dictionary["instance"] = scenes[index].instance()
 		subtypes_dictionary[subtype] = subtype_dictionary
 		
 		##entities dictionary
 		var entities_subtype_dictionary = []
 		entities_subtypes_dictionary[subtype] = entities_subtype_dictionary
+		
+#		var mm_subtype = MultiMesh.new()
+#		mm_subtypes_dictionary[subtype] = mm_subtype
+#
+#		var mmi_subtype = MultiMeshInstance.new()
+#		mmi_subtypes_dictionary[subtype] = mmi_subtype
+#
+#		mmi_subtype.multimesh = mm_subtype
+#		mm_subtype.instance_count = 1000
+#		mm_subtype.transform_format = MultiMesh.TRANSFORM_3D
+#		mm_subtype.color_format = MultiMesh.COLOR_8BIT
+#		mm_subtype.visible_instance_count = 0
+#
+		
+		#var a = subtype_dictionary["instance"].get_node("tmpParent").get_child(0).get_child(0).mesh
+		
+#		var current_node = subtype_dictionary["instance"].get_node("tmpParent").get_children()
+#		var meshFound = false
+
+#
+#		mm_subtype.mesh = subtype_dictionary["instance"].get_node("tmpParent").get_child(0).get_child(0).mesh
+#
 		index+=1
 
 func add_entity_type_astar(type, astar, astar_points):

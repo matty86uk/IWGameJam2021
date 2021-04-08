@@ -25,7 +25,28 @@ var EMOTION_NERVOUS = 4
 
 var emotion
 
+var hop_delay = 1
+var hop_time = 0
+
+var velocity = Vector3.ZERO
+var acceleration = Vector3.ZERO
+
+func _ready():
+	pass
+	#hop_time = 0 - randf() * 4 
 
 func _physics_process(delta):
+	hop_time+=delta
 	if $RayCast.is_colliding():
-		linear_velocity.y = 0
+		if hop_time > hop_delay:
+			hop()
+			hop_time = 0
+		pass
+		#linear_velocity.y = 0
+		#hop()
+	
+
+func hop():
+	#print("hop")
+	apply_central_impulse((-transform.basis.z) + Vector3.UP*2)
+	#add_force((-transform.basis.z * 5) + Vector3.UP , get_node("CollisionShape").transform.origin)

@@ -31,20 +31,10 @@ var mi_object = MeshInstance.new()
 
 func _process(delta):
 	pass
-#	if (camera_path_index == camera_path.size()):
-#		print("Changing Path")
-#		var start_point = vehicle_astar.get_closest_point($Root/MeshInstance.transform.origin.round())
-#		var end_point = vehicle_points[randi() % vehicle_points.size() - 1]
-#		camera_path_index = 0
-#		camera_path = vehicle_astar.get_point_path(start_point, end_point)
-#		#render_path()
-#	$Root/MeshInstance.transform.origin = $Root/MeshInstance.transform.origin.move_toward(camera_path[camera_path_index], delta * 5)
-#	if $Root/MeshInstance.transform.origin.distance_to(camera_path[camera_path_index]) < 0.1:
-#		camera_path_index+=1
-#	pass
 	
 func _ready():	
-	entities.add_entity_type("vehicle", ["sedan", "suv"], [load("res://Entities/Vehicles/sedan.tscn"), load("res://Models/Vehicles/suv.tscn")])	
+	#entities.add_entity_type("vehicle", ["sedan", "suv"], [load("res://Entities/Vehicles/sedan.tscn"), load("res://Models/Vehicles/suv.tscn")])	
+	entities.add_entity_type("vehicle", ["sedan"], [load("res://Entities/Vehicles/sedan.tscn")])	
 	entities.add_entity_type("pedestrian", ["pineapple"], [load("res://Entities/Pedestrians/pineapple.tscn")])
 #	for i in range(10):
 #		entities.add_entity("vehicle","sedan", Vector3(-54 - (i * 2),10,0))
@@ -83,19 +73,34 @@ func _ready():
 	vehicle_points = vehicle_astar.get_points()
 	
 	pedestrian_astar = generate_astar_pedestrian(map_dictionary)
-	var pavement_astar_points = pedestrian_astar.get("pavement")
+	
 	var mi_pedestrian = MeshInstance.new()
 	var st_pedestrian = SurfaceTool.new()
-	st_pedestrian.begin(Mesh.PRIMITIVE_POINTS)
-	st_pedestrian.add_color(Color.purple)
-	for p in pavement_astar_points:
-		st_pedestrian.add_vertex(p + Vector3.UP)
+	st_pedestrian.begin(Mesh.PRIMITIVE_LINES)
+	
+	for p in pedestrian_astar.keys():
+		st_pedestrian.add_color(Color.black)
+		st_pedestrian.add_vertex(p)
+		st_pedestrian.add_vertex(p + Vector3.UP/2)
+		var directions = pedestrian_astar.get(p)
+		if directions.empty():
+			pass
+#			st_pedestrian.add_color(Color.orange)
+#			st_pedestrian.add_vertex(p)
+#			st_pedestrian.add_vertex(p + Vector3.UP/2)
+		else:
+			for direction in directions:
+				st_pedestrian.add_color(Color.white)
+				st_pedestrian.add_vertex(p + Vector3.UP)
+				st_pedestrian.add_color(Color.purple)
+				st_pedestrian.add_vertex(p + direction + Vector3.UP/2)
 	
 	var mesh_pedestrian = st_pedestrian.commit()
 	var mat_pedestrian = SpatialMaterial.new()
 	mat_pedestrian.vertex_color_use_as_albedo = true
 	mat_pedestrian.params_point_size = 4
 	mat_pedestrian.flags_use_point_size = true
+	mat_pedestrian.flags_unshaded = true
 	
 	mi_pedestrian.mesh = mesh_pedestrian
 	mi_pedestrian.material_override = mat_pedestrian
@@ -310,8 +315,8 @@ func _ready():
 	for i in range(200):
 		entities.add_entity("vehicle","sedan", vehicle_astar.get_point_position(vehicle_points[randi() % vehicle_points.size()-1]))
 	
-	for i in range(500):
-		entities.add_entity("pedestrian", "pineapple", pavement_astar_points[randi() % pavement_astar_points.size()] + (Vector3.UP * 2) + Vector3.FORWARD )
+#	for i in range(1000):
+#		entities.add_entity("pedestrian", "pineapple", pavement_astar_points[randi() % pavement_astar_points.size()] + (Vector3.UP * 2) + Vector3.FORWARD )
 
 	var building_mesh = CubeMesh.new()
 	building_mesh.size = Vector3(1,4,1)
@@ -341,7 +346,6 @@ func _ready():
 			building_instance_count += 1
 	mm_buiding.visible_instance_count = building_instance_count
 	$Root.add_child(mmi_buiding)
-#
 
 
 func render_path():
@@ -445,28 +449,109 @@ func generate_astar_vehicle(map_dictionary):
 	return astar
 
 func generate_astar_pedestrian(map_dictionary):
+	var direction_length = 4
 	var pavement_dictionary = {}
 	var pavement_array = []
 	var crossing_array = []
 	for p in map_dictionary.keys():
 		var type = map_dictionary.get(p)
 		if type == "PAVEMENT":
-			var p1 = p + Vector3.FORWARD/3
-			var p2 = p + Vector3.BACK/3
-			var p3 = p + Vector3.LEFT/3
-			var p4 = p + Vector3.RIGHT/3
-			
-			var p5 = p + Vector3.FORWARD/3 + Vector3.LEFT/3
-			var p6 = p + Vector3.FORWARD/3 + Vector3.LEFT/3
-			
 			pavement_array.push_back(p)
-			pavement_array.push_back(p1)
-			pavement_array.push_back(p2)
-			pavement_array.push_back(p3)
-			pavement_array.push_back(p4)
-	pavement_dictionary["pavement"] = pavement_array
-	return pavement_dictionary
+			
+			for i in range(3):
+				var p1 = p + (Vector3.FORWARD/direction_length * i)
+				var p2 = p + (Vector3.BACK/direction_length * i)
+				var p3 = p + (Vector3.LEFT/direction_length * i)
+				var p4 = p + (Vector3.RIGHT/direction_length * i)
+				pavement_array.push_back(p1)
+				pavement_array.push_back(p2)
+				pavement_array.push_back(p3)
+				pavement_array.push_back(p4)
+				
+			for x in range(3):
+				for z in range(3):
+					var p5 = p + (Vector3.FORWARD/direction_length * z) + (Vector3.LEFT/direction_length * x)
+					var p6 = p + (Vector3.FORWARD/direction_length * z) + (Vector3.RIGHT/direction_length * x)
+					var p7 = p + (Vector3.BACK/direction_length * z) + (Vector3.LEFT/direction_length * x)
+					var p8 = p + (Vector3.BACK/direction_length * z) + (Vector3.RIGHT/direction_length * x)
+					pavement_array.push_back(p5)
+					pavement_array.push_back(p6)
+					pavement_array.push_back(p7)
+					pavement_array.push_back(p8)
+
+			
+			
+			
+			var forward = p + Vector3.FORWARD
+			var left = p + Vector3.LEFT
+			var right = p + Vector3.RIGHT
+			var back = p + Vector3.BACK
+			
+			if map_dictionary.get(forward) == "PAVEMENT" and map_dictionary.get(left) == "PAVEMENT" and map_dictionary.get(back) == "ROAD" and map_dictionary.get(right) == "ROAD":				
+				for i in range(16):
+					crossing_array.push_back(p + (Vector3.RIGHT/direction_length * i))
+					crossing_array.push_back(p + (Vector3.RIGHT/direction_length * i + Vector3.FORWARD/direction_length))
+					crossing_array.push_back(p + (Vector3.RIGHT/direction_length * i + Vector3.BACK/direction_length))
+					
+					crossing_array.push_back(p + (Vector3.BACK/direction_length * i))	
+					crossing_array.push_back(p + (Vector3.BACK/direction_length * i + Vector3.LEFT/direction_length))
+					crossing_array.push_back(p + (Vector3.BACK/direction_length * i+ Vector3.RIGHT/direction_length))
+			if map_dictionary.get(back) == "PAVEMENT" and map_dictionary.get(right) == "PAVEMENT" and map_dictionary.get(left) == "ROAD" and map_dictionary.get(forward) == "ROAD":				
+				for i in range(16):
+					crossing_array.push_back(p + (Vector3.LEFT/direction_length * i))
+					crossing_array.push_back(p + (Vector3.LEFT/direction_length * i + Vector3.FORWARD/direction_length))
+					crossing_array.push_back(p + (Vector3.LEFT/direction_length * i + Vector3.BACK/direction_length))
+					
+					crossing_array.push_back(p + (Vector3.FORWARD/direction_length * i))
+					crossing_array.push_back(p + (Vector3.FORWARD/direction_length * i + Vector3.LEFT/direction_length))
+					crossing_array.push_back(p + (Vector3.FORWARD/direction_length * i + Vector3.RIGHT/direction_length))
 	
+	
+	var combined_dictionary = {}
+	for p in pavement_array:
+		combined_dictionary[p] = "PAVEMENT"
+	for p in crossing_array:
+		combined_dictionary[p] = "CROSSING"
+		
+	var astar = AStar.new()
+	var pavement_directions = {}
+		
+	for point in combined_dictionary:
+		var directions = get_pavement_directions(combined_dictionary, point)
+		pavement_directions[point] = directions
+
+	return pavement_directions
+
+func get_pavement_directions(pavement_points, point):
+	var forward = point + Vector3.FORWARD/4
+	var back = point + Vector3.BACK/4
+	var left = point + Vector3.LEFT/4
+	var right = point + Vector3.RIGHT/4
+#	var forward_left = point + Vector3.FORWARD/2 + Vector3.LEFT/2
+#	var forward_right = point + Vector3.FORWARD/2 + Vector3.RIGHT/2
+#	var back_left = point + Vector3.BACK/2 + Vector3.LEFT/2
+#	var back_right = point + Vector3.BACK/2 + Vector3.RIGHT/2
+	
+	var directions = []
+	
+	if pavement_points.get(forward) == "PAVEMENT" or pavement_points.get(forward) == "CROSSING":
+		directions.push_back(Vector3.FORWARD/4)
+	if pavement_points.get(back) == "PAVEMENT" or pavement_points.get(back) == "CROSSING":
+		directions.push_back(Vector3.BACK/4)
+	if pavement_points.get(left) == "PAVEMENT" or pavement_points.get(left) == "CROSSING":
+		directions.push_back(Vector3.LEFT/4)
+	if pavement_points.get(right) == "PAVEMENT" or pavement_points.get(right) == "CROSSING":
+		directions.push_back(Vector3.RIGHT/4)
+#	if pavement_points.get(forward_left) == "PAVEMENT" or pavement_points.get(forward_left) == "CROSSING":
+#		directions.push_back(Vector3.FORWARD/3 + Vector3.LEFT/3)
+#	if pavement_points.get(forward_right) == "PAVEMENT" or pavement_points.get(forward_right) == "CROSSING":
+#		directions.push_back(Vector3.FORWARD/3 + Vector3.RIGHT/3)
+#	if pavement_points.get(back_left) == "PAVEMENT" or pavement_points.get(back_left) == "CROSSING":
+#		directions.push_back(Vector3.BACK/3 + Vector3.LEFT/3)
+#	if pavement_points.get(back_right) == "PAVEMENT" or pavement_points.get(back_right) == "CROSSING":
+#		directions.push_back(Vector3.BACK/3 + Vector3.RIGHT/3)
+	return directions
+
 func generate_or_get_id_for_point(point, id_list):
 	if !id_list.has(point):
 		id_list[point] = id_list.size() + 1

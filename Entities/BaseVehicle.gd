@@ -93,7 +93,7 @@ func _physics_process(delta):
 				
 				var diff = target_position - this_position
 				var rotation_transform = transform.looking_at(target_position, Vector3.UP)
-				var rotated_transform = transform.interpolate_with(rotation_transform, delta * rotation_speed)				
+				var rotated_transform = transform.interpolate_with(rotation_transform, delta * rotation_speed)
 				transform = rotated_transform
 	
 				var facing_direction = -transform.basis.z

@@ -4,6 +4,14 @@ extends Node
 var game = load("res://Scenes/Game.tscn").instance()
 
 func _ready():	
+	
+	var p1 = Vector3(20, 0, 40)
+	var p2 = Vector3(20, 0, 39)
+	
+	print(p1 + Vector3.FORWARD/4)
+	print(p1 + Vector3.FORWARD/4 * 2)
+	print(p2 + Vector3.BACK/4)
+	print(p2 + Vector3.BACK/4 * 2) 
 	var vehicle_dictionary = load_vehicle_scenes()	
 	game.add_scene_dictionary(vehicle_dictionary, "vehicles")
 	game.set_subtypes("vehicles", load_json_file("res://Data/vehicles.tres"))
