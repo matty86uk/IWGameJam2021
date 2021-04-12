@@ -1,6 +1,6 @@
-extends KinematicBody
+extends RigidBody
 
-var gravity = -10
+#var gravity = -10
 
 var STATE_INSTANCED = 0
 var STATE_READY = 1
@@ -14,7 +14,7 @@ var MODE_WAITING = 0
 var MODE_ACCELLERATING = 1
 var MODE_DECELLERATING = 2
 var MODE_STUCK = 3
-var mode
+#var mode
 
 var path = []
 var path_index = 0
@@ -23,7 +23,7 @@ var velocity = Vector3.ZERO
 var acceleration = Vector3.ZERO
 var engine_power = 2
 var braking = -20
-var friction = -2.0
+#var friction = -2.0
 var drag = -2.0
 var rotation_speed = 20
 var mi_debug = MeshInstance.new()
@@ -43,37 +43,32 @@ func _ready():
 	
 	
 func _physics_process(delta):
-#
-	frame_count+=1
-	if frame_count > next_physics_frame:
-		frame_count=0
+	var is_on_floor = $RayCast.is_colliding()
+	apply_central_impulse(-transform.basis.z * delta * 6)
+#	if is_on_floor:
+#		print("on floor")
+#		#set_axis_lock(PhysicsServer.BODY_AXIS_LINEAR_Y, true)		
 		
-		var is_on_floor = is_on_floor()
 		
-		if is_on_floor():
-			acceleration.y = 0
-			apply_friction(delta)
-			if has_valid_path():
-				var this_position = transform.origin
-				var target_position = path[path_index]
-				target_position.y = this_position.y
-				
-				var diff = target_position - this_position
-				var rotation_transform = transform.looking_at(target_position, Vector3.UP)
-				var rotated_transform = transform.interpolate_with(rotation_transform, delta * rotation_speed)
-				transform = rotated_transform
-	
-				var facing_direction = -transform.basis.z
-				var d = facing_direction.dot(velocity.normalized())
-				if d > 0:
-					velocity = facing_direction * velocity.length()
+
+func look_follow(state, current_transform, target_position):
+	if has_valid_path():			
+			var position = global_transform.origin
+			var current_direction = -global_transform.basis.z
+			var required_direction = position.direction_to(target_position)
+			var cross = current_direction.cross(required_direction)
+			var d = current_direction.dot(required_direction)
+			if d < 0.99:
+				if cross.y < 0:
+					state.set_angular_velocity(-Vector3.UP * (0.02 / state.get_step()))
 				else:
-					velocity = -facing_direction * velocity.length()
-		else:
-			acceleration.y = gravity
-			velocity += acceleration * delta
-		velocity = move_and_slide(velocity, Vector3.UP)
-		
+					state.set_angular_velocity(Vector3.UP * (0.02 / state.get_step()))
+
+func _integrate_forces(state):	
+	if has_valid_path():
+		var target_position = path[path_index]
+		look_follow(state, get_global_transform(), target_position)
+	
 func has_valid_path():
 	if path.size() > 0 and path_index < path.size():
 		return true
@@ -88,15 +83,11 @@ func apply_friction(delta):
 	acceleration += drag_force + friction_force
 
 func forward():
-	if is_on_floor():
-		acceleration = -transform.basis.z * engine_power
+	#if $RayCast.is_colliding():
+	acceleration = -transform.basis.z * engine_power
 
 func reverse():
 	acceleration = -transform.basis.z * braking
 
 func set_path(new_path):
 	path = new_path
-
-func collide(vel, pos):
-	velocity += vel	
-	pass

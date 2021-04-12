@@ -2,8 +2,12 @@ extends Spatial
 
 var entities = load("res://Scenes/Entities.tscn").instance()
 
+var player_scene = load("res://Entities/PlayerVehicle1.tscn")
+
 var size_x
 var size_z
+
+var player
 
 var grass_colors = [
 	Color8(138, 184, 99),
@@ -21,9 +25,13 @@ var building_colors = [
 	Color.coral
 ]
 
-var pedestrian_astar = AStar2D.new()
+
 var vehicle_astar = AStar.new()
 var vehicle_points = []
+
+var pedestrian_astar = AStar.new()
+var pedestrian_points = []
+
 var camera_path_index = 0
 var camera_path = []
 
@@ -65,49 +73,18 @@ func _ready():
 		map_dictionary[p8.round()] = "ROAD"
 		map_dictionary[p9.round()] = "ROAD"
 	print(str("Total Roads:", map_dictionary.size()))
-	var pavement_points = generate_pavement(map_dictionary)		
+	var pavement_points = generate_pavement(map_dictionary)
 	for p in pavement_points:
 		map_dictionary[p.round()] = "PAVEMENT"
 
 	vehicle_astar = generate_astar_vehicle(map_dictionary)	
 	vehicle_points = vehicle_astar.get_points()
 	
-	pedestrian_astar = generate_astar_pedestrian(map_dictionary)
-	
-	var mi_pedestrian = MeshInstance.new()
-	var st_pedestrian = SurfaceTool.new()
-	st_pedestrian.begin(Mesh.PRIMITIVE_LINES)
-	
-	for p in pedestrian_astar.keys():
-		st_pedestrian.add_color(Color.black)
-		st_pedestrian.add_vertex(p)
-		st_pedestrian.add_vertex(p + Vector3.UP/2)
-		var directions = pedestrian_astar.get(p)
-		if directions.empty():
-			pass
-#			st_pedestrian.add_color(Color.orange)
-#			st_pedestrian.add_vertex(p)
-#			st_pedestrian.add_vertex(p + Vector3.UP/2)
-		else:
-			for direction in directions:
-				st_pedestrian.add_color(Color.white)
-				st_pedestrian.add_vertex(p + Vector3.UP)
-				st_pedestrian.add_color(Color.purple)
-				st_pedestrian.add_vertex(p + direction + Vector3.UP/2)
-	
-	var mesh_pedestrian = st_pedestrian.commit()
-	var mat_pedestrian = SpatialMaterial.new()
-	mat_pedestrian.vertex_color_use_as_albedo = true
-	mat_pedestrian.params_point_size = 4
-	mat_pedestrian.flags_use_point_size = true
-	mat_pedestrian.flags_unshaded = true
-	
-	mi_pedestrian.mesh = mesh_pedestrian
-	mi_pedestrian.material_override = mat_pedestrian
-	add_child(mi_pedestrian)
-	
-	
+	var pedestrian_nav = generate_astar_pedestrian(map_dictionary)
+	var pedestrian_astar = pedestrian_nav.get("astar")
+	pedestrian_points =  pedestrian_astar.get_points()
 	entities.add_entity_type_astar("vehicle", vehicle_astar, vehicle_points)
+	entities.add_entity_type_astar("pedestrian", pedestrian_astar, pedestrian_points)
 	
 	var building_points = generate_buildings(map_dictionary)
 	var total_buiilding_points = Vector3(0,0,0)
@@ -346,7 +323,11 @@ func _ready():
 			building_instance_count += 1
 	mm_buiding.visible_instance_count = building_instance_count
 	$Root.add_child(mmi_buiding)
-
+	
+	player = player_scene.instance()
+	player.transform.origin = Vector3(max_x - 20, 0, max_z - 20)
+	$Root.add_child(player)
+	player.get_node("Camera").current = true
 
 func render_path():
 	var existing = $Root.find_node("Path")
@@ -435,8 +416,7 @@ func generate_astar_vehicle(map_dictionary):
 	print("road direction dictionary:", road_side_dictionary.size())
 	var id_list = {}
 	#create all points (that have directions)
-	for point in road_side_dictionary.keys():
-		
+	for point in road_side_dictionary.keys():		
 		var id = generate_or_get_id_for_point(point, id_list)
 		astar.add_point(id, point)
 	#create connections
@@ -479,9 +459,6 @@ func generate_astar_pedestrian(map_dictionary):
 					pavement_array.push_back(p7)
 					pavement_array.push_back(p8)
 
-			
-			
-			
 			var forward = p + Vector3.FORWARD
 			var left = p + Vector3.LEFT
 			var right = p + Vector3.RIGHT
@@ -513,14 +490,21 @@ func generate_astar_pedestrian(map_dictionary):
 	for p in crossing_array:
 		combined_dictionary[p] = "CROSSING"
 		
+	var id_list = {}
 	var astar = AStar.new()
-	var pavement_directions = {}
-		
+	var pedestrian_nav = {}
 	for point in combined_dictionary:
+		var id = generate_or_get_id_for_point(point, id_list)
+		astar.add_point(id, point)
+	
+	for point in combined_dictionary:
+		var id = generate_or_get_id_for_point(point, id_list)
 		var directions = get_pavement_directions(combined_dictionary, point)
-		pavement_directions[point] = directions
-
-	return pavement_directions
+		for direction in directions:
+			var target_id = generate_or_get_id_for_point(point + direction, id_list)
+			astar.connect_points(id, target_id, false)
+	pedestrian_nav["astar"] = astar
+	return pedestrian_nav
 
 func get_pavement_directions(pavement_points, point):
 	var forward = point + Vector3.FORWARD/4

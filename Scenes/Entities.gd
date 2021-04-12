@@ -1,8 +1,9 @@
 extends Node
 
 var base_pedestrian = preload("res://Entities/BasePedestrian.tscn")
-var base_vehicle = preload("res://Entities/BaseVehicle.tscn")
-#var base_vehicle_rigid = preload("res://Entities/BaseVehicleRigid.tscn")
+
+#var base_vehicle = preload("res://Entities/BaseVehicle.tscn")
+var base_vehicle = preload("res://Entities/BaseVehicleRigid.tscn")
 #var base_vehicle_gsai = preload("res://Entities/BaseVehicleGSAI.tscn")
 
 var entity_types = {}

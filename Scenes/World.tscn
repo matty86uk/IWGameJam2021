@@ -13,7 +13,6 @@ vertex_color_use_as_albedo = true
 albedo_color = Color( 0.207843, 0.85098, 0, 1 )
 
 [node name="World" type="Spatial"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00297546, 9.53674e-07, -0.075428 )
 script = ExtResource( 1 )
 
 [node name="Camera" type="Camera" parent="."]
