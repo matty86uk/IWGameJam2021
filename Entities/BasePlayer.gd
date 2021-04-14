@@ -27,12 +27,12 @@ func _physics_process(delta):
 		calculate_steering(delta)
 	acceleration.y = gravity
 	velocity += acceleration * delta
-	var collision = move_and_collide(velocity, false, true, true)
-	var collider = collision["collider"]
-	if collider is KinematicBody:
-		collider.collide(transform.basis.z * (velocity * 0.2), collision["position"])
+#	var collision = move_and_collide(velocity, false, true, true)
+#	var collider = collision["collider"]
+#	if collider is KinematicBody:
+#		collider.collide(transform.basis.z * (velocity * 0.2), collision["position"])
 	
-	velocity = move_and_slide_with_snap(velocity, -transform.basis.y, Vector3.UP, true)
+	velocity = move_and_slide_with_snap(velocity, -transform.basis.y, Vector3.UP, true) 
 
 func apply_friction(delta):
 	if velocity.length() < 0.2 and acceleration.length() == 0:

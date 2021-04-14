@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Scenes/World.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/Root.gd" type="Script" id=2]
+[ext_resource path="res://Entities/Weapons/mesh/arrow.mesh" type="ArrayMesh" id=3]
 
 [sub_resource type="Environment" id=1]
 ambient_light_color = Color( 1, 1, 1, 1 )
@@ -29,3 +30,10 @@ transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0 )
 visible = false
 mesh = SubResource( 2 )
 material/0 = SubResource( 3 )
+
+[node name="Rope" type="MeshInstance" parent="Root"]
+
+[node name="Projectile" type="MeshInstance" parent="Root"]
+mesh = ExtResource( 3 )
+material/0 = null
+material/1 = null

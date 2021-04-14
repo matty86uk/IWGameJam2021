@@ -292,8 +292,8 @@ func _ready():
 	for i in range(200):
 		entities.add_entity("vehicle","sedan", vehicle_astar.get_point_position(vehicle_points[randi() % vehicle_points.size()-1]))
 	
-#	for i in range(1000):
-#		entities.add_entity("pedestrian", "pineapple", pavement_astar_points[randi() % pavement_astar_points.size()] + (Vector3.UP * 2) + Vector3.FORWARD )
+	for i in range(1000):
+		entities.add_entity("pedestrian", "pineapple", pedestrian_astar.get_point_position(pedestrian_points[randi() % pedestrian_points.size()]))
 
 	var building_mesh = CubeMesh.new()
 	building_mesh.size = Vector3(1,4,1)
@@ -326,6 +326,7 @@ func _ready():
 	
 	player = player_scene.instance()
 	player.transform.origin = Vector3(max_x - 20, 0, max_z - 20)
+	player.init($Root/Rope, $Root/Projectile)
 	$Root.add_child(player)
 	player.get_node("Camera").current = true
 

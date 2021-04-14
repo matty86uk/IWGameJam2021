@@ -37,6 +37,8 @@ func _ready():
 
 func _physics_process(delta):
 	hop_time+=delta
+	if hop_time < hop_delay:
+		return
 	if $RayCast.is_colliding():
 		if hop_time > hop_delay:
 			hop()
