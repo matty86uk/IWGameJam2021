@@ -48,29 +48,7 @@ func add_entity_type(type, subtypes, scenes):
 		
 		##entities dictionary
 		var entities_subtype_dictionary = []
-		entities_subtypes_dictionary[subtype] = entities_subtype_dictionary
-		
-#		var mm_subtype = MultiMesh.new()
-#		mm_subtypes_dictionary[subtype] = mm_subtype
-#
-#		var mmi_subtype = MultiMeshInstance.new()
-#		mmi_subtypes_dictionary[subtype] = mmi_subtype
-#
-#		mmi_subtype.multimesh = mm_subtype
-#		mm_subtype.instance_count = 1000
-#		mm_subtype.transform_format = MultiMesh.TRANSFORM_3D
-#		mm_subtype.color_format = MultiMesh.COLOR_8BIT
-#		mm_subtype.visible_instance_count = 0
-#
-		
-		#var a = subtype_dictionary["instance"].get_node("tmpParent").get_child(0).get_child(0).mesh
-		
-#		var current_node = subtype_dictionary["instance"].get_node("tmpParent").get_children()
-#		var meshFound = false
-
-#
-#		mm_subtype.mesh = subtype_dictionary["instance"].get_node("tmpParent").get_child(0).get_child(0).mesh
-#
+		entities_subtypes_dictionary[subtype] = entities_subtype_dictionary#
 		index+=1
 
 func add_entity_type_astar(type, astar, astar_points):

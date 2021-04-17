@@ -31,7 +31,6 @@ func _physics_process(delta):
 #	var collider = collision["collider"]
 #	if collider is KinematicBody:
 #		collider.collide(transform.basis.z * (velocity * 0.2), collision["position"])
-	
 	velocity = move_and_slide_with_snap(velocity, -transform.basis.y, Vector3.UP, true) 
 
 func apply_friction(delta):

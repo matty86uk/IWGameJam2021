@@ -8,8 +8,8 @@
 [ext_resource path="res://Entities/Vehicles/gltf/_defaultMat.material" type="Material" id=6]
 [ext_resource path="res://Entities/Vehicles/gltf/window.material" type="Material" id=7]
 
-[sub_resource type="BoxShape" id=1]
-extents = Vector3( 0.6, 0.5, 1.2 )
+[sub_resource type="BoxShape" id=7]
+extents = Vector3( 0.6, 0.55, 1.2 )
 
 [sub_resource type="ArrayMesh" id=2]
 surfaces/0 = {
@@ -111,13 +111,13 @@ surfaces/1 = {
 "vertex_count": 617
 }
 
-[sub_resource type="CylinderShape" id=4]
+[sub_resource type="CylinderShape" id=6]
 
 [node name="sedan" type="KinematicBody"]
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
-transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.43647, 0 )
-shape = SubResource( 1 )
+transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.475, 0 )
+shape = SubResource( 7 )
 
 [node name="tmpParent" type="Spatial" parent="."]
 
@@ -159,8 +159,8 @@ material/1 = null
 
 [node name="CollisionWheelsRear" type="CollisionShape" parent="."]
 transform = Transform( -2.44381e-08, -0.325, 0, 0.15, -5.29492e-08, 0, 0, 0, 0.15, 0, 0.2, 0.322 )
-shape = SubResource( 4 )
+shape = SubResource( 6 )
 
 [node name="CollisionWheelsFront" type="CollisionShape" parent="."]
 transform = Transform( -2.44381e-08, -0.325, 0, 0.15, -5.29492e-08, 0, 0, 0, 0.15, 0, 0.2, -0.33 )
-shape = SubResource( 4 )
+shape = SubResource( 6 )

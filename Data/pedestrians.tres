@@ -1,0 +1,42 @@
+[
+		{
+			"name":"apple",
+			"occurence": 1.0,
+			"scene": "apple.tscn"
+		},
+		{
+			"name":"banana",
+			"occurence": 1.0,
+			"scene": "banana.tscn"
+		},
+		{
+			"name":"coconut",
+			"occurence": 1.0,
+			"scene": "coconut.tscn"
+		},
+		{
+			"name":"grapes",
+			"occurence": 1.0,
+			"scene": "grapes.tscn"
+		},
+		{
+			"name":"lemon",
+			"occurence": 1.0,
+			"scene": "lemon.tscn"
+		},
+		{
+			"name":"orange",
+			"occurence": 1.0,
+			"scene": "orange.tscn"
+		},
+		{
+			"name":"pear",
+			"occurence": 1.0,
+			"scene": "pear.tscn"
+		},
+		{
+			"name":"pineapple",
+			"occurence": 1.0,
+			"scene": "pineapple.tscn"
+		}
+]

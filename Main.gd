@@ -12,14 +12,20 @@ func _ready():
 	print(p1 + Vector3.FORWARD/4 * 2)
 	print(p2 + Vector3.BACK/4)
 	print(p2 + Vector3.BACK/4 * 2) 
-	var vehicle_dictionary = load_vehicle_scenes()	
-	game.add_scene_dictionary(vehicle_dictionary, "vehicles")
-	game.set_subtypes("vehicles", load_json_file("res://Data/vehicles.tres"))
+		
+	var vehicle_dictionary = load_vehicle_scenes()
+	game.add_scene_dictionary(vehicle_dictionary, "vehicles", load_json_file("res://Data/vehicles.tres"))
+
+	var pedestrian_dictionary = load_pedestrian_scenes()
+	game.add_scene_dictionary(pedestrian_dictionary, "pedestrians", load_json_file("res://Data/pedestrians.tres"))
 	
 	add_child(game)
 
 func load_vehicle_scenes():
-	return load_directory("res://Vehicles/Vehicles", ".tscn")
+	return load_directory("res://Entities/Vehicles", ".tscn")
+
+func load_pedestrian_scenes():
+	return load_directory("res://Entities/Pedestrians", ".tscn")
 
 func load_directory(path, extension):
 	var dictionary = {}
