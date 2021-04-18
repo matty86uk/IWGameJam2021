@@ -165,9 +165,9 @@ surfaces/2 = {
 [sub_resource type="BoxShape" id=4]
 extents = Vector3( 0.32, 0.35, 0.85 )
 
-[sub_resource type="CylinderShape" id=6]
+[sub_resource type="CylinderShape" id=5]
 
-[sub_resource type="CylinderShape" id=7]
+[sub_resource type="CylinderShape" id=6]
 
 [node name="garbageTruck" type="KinematicBody"]
 
@@ -226,8 +226,8 @@ shape = SubResource( 4 )
 
 [node name="CollisionWheelsRear" type="CollisionShape" parent="."]
 transform = Transform( -2.44381e-08, -0.325, 0, 0.15, -5.29492e-08, 0, 0, 0, 0.15, 0, 0.25, 0.2 )
-shape = SubResource( 6 )
+shape = SubResource( 5 )
 
 [node name="CollisionWheelsFront" type="CollisionShape" parent="."]
 transform = Transform( -2.44381e-08, -0.325, 0, 0.15, -5.29492e-08, 0, 0, 0, 0.15, 0, 0.25, -0.6 )
-shape = SubResource( 7 )
+shape = SubResource( 6 )

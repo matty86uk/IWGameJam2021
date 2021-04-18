@@ -81,7 +81,7 @@ func add_pedestrian(type, subtype, position):
 		new_pedestrian.add_child(child)
 	new_pedestrian.state = new_pedestrian.STATE_INSTANCED
 	add_child(new_pedestrian)
-	pedestrians.push_back(new_pedestrian)	
+	pedestrians.push_back(new_pedestrian)
 	
 func _process(delta):
 	for vehicle in vehicles:

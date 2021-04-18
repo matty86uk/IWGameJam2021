@@ -29,19 +29,12 @@ var building_colors = [
 	Color.coral
 ]
 
-
-
-
-#var vehicle_astar = AStar.new()
-#var vehicle_points = []
-#
-#var pedestrian_astar = AStar.new()
-#var pedestrian_points = []
-
 var camera_path_index = 0
 var camera_path = []
 
 var mi_object = MeshInstance.new()
+
+var world_size
 
 func _process(delta):
 	pass
@@ -83,7 +76,7 @@ func generate_world(world_seed : int):
 	
 	
 	#World
-	var world_size = find_world_size(map_dictionary)
+	world_size = find_world_size(map_dictionary)
 	
 	#floor
 	create_floor_mesh(map_dictionary, world_size["min_x"], world_size["max_x"], world_size["min_z"], world_size["max_z"])
@@ -101,10 +94,17 @@ func create_entity(type, subtype):
 	entities.add_entity(type, subtype, random_spawn_point_for_entity(type))
 
 func random_spawn_point_for_entity(type):
-	return navigation_astar[type].get_point_position(navigation_points[type][randi() % navigation_points[type].size()-1])		
+	return navigation_astar[type].get_point_position(navigation_points[type][randi() % navigation_points[type].size()-1])
 
 func spawn_player():
-	pass
+	var max_x = world_size["max_x"]
+	var max_z = world_size["max_z"]
+	player = player_scene.instance()
+	player.transform.origin = Vector3(max_x - 20, 0, max_z - 20)
+	player.init($Root, $Root/Rope, projectile_scene)
+	$Root.add_child(player)
+	player.get_node("Camera").current = true
+	
 	
 func _ready():
 	return

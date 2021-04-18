@@ -32,8 +32,7 @@ var velocity = Vector3.ZERO
 var acceleration = Vector3.ZERO
 
 func _ready():
-	pass
-	#hop_time = 0 - randf() * 4 
+	hop_time = 0 - randf() * 4 
 
 func _physics_process(delta):
 	hop_time+=delta

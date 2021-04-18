@@ -110,12 +110,12 @@ surfaces/1 = {
 "vertex_count": 408
 }
 
-[sub_resource type="BoxShape" id=7]
+[sub_resource type="BoxShape" id=3]
 extents = Vector3( 0.32, 0.3, 0.65 )
 
-[sub_resource type="CylinderShape" id=10]
+[sub_resource type="CylinderShape" id=4]
 
-[sub_resource type="CylinderShape" id=11]
+[sub_resource type="CylinderShape" id=5]
 
 [node name="taxi" type="KinematicBody"]
 
@@ -159,12 +159,12 @@ material/1 = null
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.05 )
-shape = SubResource( 7 )
+shape = SubResource( 3 )
 
 [node name="CollisionWheelsFront" type="CollisionShape" parent="."]
 transform = Transform( -2.44381e-08, -0.325, 0, 0.15, -5.29492e-08, 0, 0, 0, 0.15, 0, 0.25, -0.43 )
-shape = SubResource( 10 )
+shape = SubResource( 4 )
 
 [node name="CollisionWheelsRear" type="CollisionShape" parent="."]
 transform = Transform( -2.44381e-08, -0.325, 0, 0.15, -5.29492e-08, 0, 0, 0, 0.15, 0, 0.25, 0.32 )
-shape = SubResource( 11 )
+shape = SubResource( 5 )

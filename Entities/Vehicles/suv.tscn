@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://Entities/Vehicles/gltf/plastic.material" type="Material" id=1]
 [ext_resource path="res://Entities/Vehicles/gltf/lightBack.material" type="Material" id=2]
@@ -83,9 +83,6 @@ surfaces/5 = {
 "vertex_count": 1261
 }
 
-[sub_resource type="SpatialMaterial" id=3]
-albedo_color = Color( 0.184314, 0.901961, 0.819608, 1 )
-
 [sub_resource type="ArrayMesh" id=2]
 resource_name = "wheel_back"
 surfaces/0 = {
@@ -113,12 +110,12 @@ surfaces/1 = {
 "vertex_count": 617
 }
 
-[sub_resource type="BoxShape" id=4]
+[sub_resource type="BoxShape" id=3]
 extents = Vector3( 0.32, 0.25, 0.6 )
 
-[sub_resource type="CylinderShape" id=6]
+[sub_resource type="CylinderShape" id=4]
 
-[sub_resource type="CylinderShape" id=7]
+[sub_resource type="CylinderShape" id=5]
 
 [node name="suv" type="KinematicBody"]
 
@@ -130,7 +127,7 @@ extents = Vector3( 0.32, 0.25, 0.6 )
 transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.2, -0.1 )
 mesh = SubResource( 1 )
 material/0 = null
-material/1 = SubResource( 3 )
+material/1 = null
 material/2 = null
 material/3 = null
 material/4 = null
@@ -168,12 +165,12 @@ material/1 = null
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.1 )
-shape = SubResource( 4 )
+shape = SubResource( 3 )
 
 [node name="CollisionWheelsRear" type="CollisionShape" parent="."]
 transform = Transform( -2.44381e-08, -0.325, 0, 0.15, -5.29492e-08, 0, 0, 0, 0.15, 0, 0.25, 0.23 )
-shape = SubResource( 6 )
+shape = SubResource( 4 )
 
 [node name="CollisionWheelsFront" type="CollisionShape" parent="."]
 transform = Transform( -2.44381e-08, -0.325, 0, 0.15, -5.29492e-08, 0, 0, 0, 0.15, 0, 0.25, -0.43 )
-shape = SubResource( 7 )
+shape = SubResource( 5 )
