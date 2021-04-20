@@ -1,12 +1,23 @@
 extends Spatial
 
-var menu
 var world = load("res://Scenes/FruitWorld.tscn").instance()
 var blender_scene = load("res://Scenes/BlenderScene.tscn")
+var shop_world_scene = load("res://Scenes/ShopWorld.tscn")
+var main_menu_scene = load("res://Scenes/MainMenu.tscn")
+
+var main_menu
+var shop_world
+
 
 var scene_dictionary = {}
 var game_data_dictionary = {}
 var game_data_total_entities = {"vehicle":200, "pedestrian":500}
+
+
+func _ready():
+	main_menu_scene()
+	#blender_scene()
+	#fruit_world_scene()
 
 func fruit_world_scene():
 	world.generate_world(12345)
@@ -56,7 +67,20 @@ func blender_scene():
 	blender.init(fruits, fruit_data)
 	add_child(blender)
 	blender.start()
+
+func main_menu_scene():
+	shop_world = shop_world_scene.instance()
+	shop_world.init(game_data_dictionary["pedestrian"], scene_dictionary["pedestrian"])
+	main_menu = main_menu_scene.instance()
+	main_menu.connect("start_game", self, "_start_game")
 	
+	add_child(shop_world)
+	add_child(main_menu)
+
+func _start_game():
+	print("start game")
+	remove_child(main_menu)
+	shop_world.shop_camera()
 
 func random_fruits():
 	var chosen_fruits = []
@@ -67,9 +91,6 @@ func random_fruits():
 		chosen_fruits.push_back(random_fruit["name"])
 	return chosen_fruits
 
-func _ready():
-	blender_scene()
-	#fruit_world_scene()
 
 
 func add_scene_dictionary(dictionary, key, game_data):
