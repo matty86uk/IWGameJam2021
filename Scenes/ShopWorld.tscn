@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=2]
+[gd_scene load_steps=39 format=2]
 
 [ext_resource path="res://Materials/wood.material" type="Material" id=1]
 [ext_resource path="res://Entities/ShopStuff/soda.tscn" type="PackedScene" id=2]
@@ -6,7 +6,6 @@
 [ext_resource path="res://Scenes/ShopWorld.gd" type="Script" id=4]
 [ext_resource path="res://Audio/cash_register.wav" type="AudioStream" id=5]
 [ext_resource path="res://Entities/ShopStuff/gate_simple.tscn" type="PackedScene" id=6]
-[ext_resource path="res://Entities/PlayerVehicle1.tscn" type="PackedScene" id=7]
 
 [sub_resource type="PlaneMesh" id=1]
 size = Vector2( 100, 100 )
@@ -100,32 +99,32 @@ normal_texture = SubResource( 24 )
 [sub_resource type="CubeMesh" id=26]
 size = Vector3( 6, 3, 3 )
 
-[sub_resource type="SpatialMaterial" id=33]
+[sub_resource type="SpatialMaterial" id=27]
 albedo_color = Color( 0.345098, 0.345098, 0.345098, 1 )
 
-[sub_resource type="ViewportTexture" id=34]
+[sub_resource type="ViewportTexture" id=28]
 viewport_path = NodePath("Ground/Building/MeshInstance2/Viewport")
 
-[sub_resource type="SpatialMaterial" id=31]
+[sub_resource type="SpatialMaterial" id=29]
 resource_local_to_scene = true
 flags_unshaded = true
 params_billboard_keep_scale = true
-albedo_texture = SubResource( 34 )
+albedo_texture = SubResource( 28 )
 
 [sub_resource type="QuadMesh" id=30]
-material = SubResource( 31 )
+material = SubResource( 29 )
 size = Vector2( 5, 4 )
 
-[sub_resource type="DynamicFontData" id=28]
+[sub_resource type="DynamicFontData" id=31]
 font_path = "res://Fonts/Radical-regular.otf"
 
-[sub_resource type="DynamicFont" id=29]
+[sub_resource type="DynamicFont" id=32]
 size = 100
 outline_size = 2
 outline_color = Color( 0, 0, 0, 1 )
 use_mipmaps = true
 use_filter = true
-font_data = SubResource( 28 )
+font_data = SubResource( 31 )
 
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 4 )
@@ -218,13 +217,10 @@ material/0 = SubResource( 25 )
 [node name="Computer" type="MeshInstance" parent="Ground/Building"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -9.49158, 1.50579, 2.28785 )
 mesh = SubResource( 26 )
-material/0 = SubResource( 33 )
+material/0 = SubResource( 27 )
 
 [node name="gate_simple" parent="Ground/Building/Computer" instance=ExtResource( 6 )]
 transform = Transform( -3.25841e-07, 0, 1, 0, 2, 0, -2, 0, -1.62921e-07, -2.30449, 0.826267, -0.00472736 )
-
-[node name="BaseVehicle" parent="Ground/Building/Computer" instance=ExtResource( 7 )]
-transform = Transform( -1.62921e-07, 0, 1, 0, 1, 0, -1, 0, -1.62921e-07, 1.49956, 1.47271, 0 )
 
 [node name="MeshInstance2" type="MeshInstance" parent="Ground/Building"]
 transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, -9.22027, 3.07613, 3.67867 )
@@ -252,7 +248,7 @@ __meta__ = {
 [node name="Label" type="Label" parent="Ground/Building/MeshInstance2/Viewport/ViewportContainer"]
 margin_right = 655.0
 margin_bottom = 36.0
-custom_fonts/font = SubResource( 29 )
+custom_fonts/font = SubResource( 32 )
 custom_colors/font_color = Color( 1, 1, 1, 1 )
 text = "Fruitiverse Portal 
 Contraption 9000!"
