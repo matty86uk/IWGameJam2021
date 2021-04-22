@@ -36,8 +36,11 @@ var mi_object = MeshInstance.new()
 
 var world_size
 
+var current_camera_pos
+
 func _process(delta):
-	pass
+	if current_camera_pos:
+		$Camera.global_transform = $Camera.global_transform.interpolate_with(current_camera_pos.global_transform, delta*2)
 	
 
 func generate_world(world_seed : int):
@@ -91,7 +94,7 @@ func create_entity_types(type, sub_types, packed_scenes):
 	entities.add_entity_type(type, sub_types, packed_scenes)
 
 func create_entity(type, subtype):
-	entities.add_entity(type, subtype, random_spawn_point_for_entity(type))
+	entities.add_entity(type, subtype, random_spawn_point_for_entity(type) + Vector3.UP)
 
 func random_spawn_point_for_entity(type):
 	return navigation_astar[type].get_point_position(navigation_points[type][randi() % navigation_points[type].size()-1])
@@ -103,8 +106,16 @@ func spawn_player():
 	player.transform.origin = Vector3(max_x - 20, 0, max_z - 20)
 	player.init($Root, $Root/Rope, projectile_scene)
 	$Root.add_child(player)
-	player.get_node("Camera").current = true
+
+func move_camera(position):
+	$Camera.global_transform = player.get_node(str("Camera", position)).global_transform	
+	current_camera_pos =  player.get_node(str("Camera", position))
 	
+func transition_camera(position):
+	current_camera_pos =  player.get_node(str("Camera", position))
+	
+func set_current_camera():
+	$Camera.current = true
 	
 func _ready():
 	return
@@ -114,284 +125,284 @@ func _ready():
 #	for i in range(10):
 #		entities.add_entity("vehicle","sedan", Vector3(-54 - (i * 2),10,0))
 	
-	#randomize()
-	rand_seed(12345)
-	var map_dictionary = {}
-	var points = generate_roads(Vector3(0,0,0), 2, SimpleRoads.new(), 3)
-
-	for p in points: 
-		var p1 = p*3+(Vector3(-1,0,1))
-		var p2 = p*3+(Vector3(0,0,1))
-		var p3 = p*3+(Vector3(1,0,1))
-		var p4 = p*3+(Vector3(-1,0,0))
-		var p5 = p*3+(Vector3(0,0,0))
-		var p6 = p*3+(Vector3(1,0,0))
-		var p7 = p*3+(Vector3(-1,0,-1))
-		var p8 = p*3+(Vector3(0,0,-1))
-		var p9 = p*3+(Vector3(1,0,-1))
-
-		map_dictionary[p1.round()] = "ROAD"
-		map_dictionary[p2.round()] = "ROAD"
-		map_dictionary[p3.round()] = "ROAD"
-		map_dictionary[p4.round()] = "ROAD"
-		map_dictionary[p5.round()] = "ROAD"
-		map_dictionary[p6.round()] = "ROAD"
-		map_dictionary[p7.round()] = "ROAD"
-		map_dictionary[p8.round()] = "ROAD"
-		map_dictionary[p9.round()] = "ROAD"
-	print(str("Total Roads:", map_dictionary.size()))
-	var pavement_points = generate_pavement(map_dictionary)
-	for p in pavement_points:
-		map_dictionary[p.round()] = "PAVEMENT"
-
-	var vehicle_astar = generate_astar_vehicle(map_dictionary)	
-	var vehicle_points = vehicle_astar.get_points()
-	
-	var pedestrian_nav = generate_astar_pedestrian(map_dictionary)
-	var pedestrian_astar = pedestrian_nav.get("astar")
-	var pedestrian_points =  pedestrian_astar.get_points()
-	entities.add_entity_type_astar("vehicle", vehicle_astar, vehicle_points)
-	entities.add_entity_type_astar("pedestrian", pedestrian_astar, pedestrian_points)
-	
-	var building_points = generate_buildings(map_dictionary)
-	var total_buiilding_points = Vector3(0,0,0)
-	for p in building_points:
-		map_dictionary[p] = "BUILDING"
-		total_buiilding_points += p
-	
-	var avg_building_point = total_buiilding_points/building_points.size()
-
-	var road_tarmac = SpatialMaterial.new()
-	road_tarmac.albedo_color = Color8(95, 100, 117)
-	road_tarmac.vertex_color_use_as_albedo = true
-	
-	var road_paint = SpatialMaterial.new()
-	road_paint.albedo_color = Color.white
-	road_paint.vertex_color_use_as_albedo = true
-	
-	var pavement = SpatialMaterial.new()
-	pavement.albedo_color = Color8(224,224,237)
-	pavement.vertex_color_use_as_albedo = true
-		
-	var road_mesh = CubeMesh.new()	
-	road_mesh.size = Vector3(1, 0.1, 1)
-	
-	var pavement_mesh = CubeMesh.new()
-	pavement_mesh.size = Vector3(1, 0.1, 1)
-	
-	var road_middle_mesh = CubeMesh.new()
-	road_middle_mesh.size = Vector3(0.4,0.5,0.4)
-	
-	var max_x = 0
-	var max_z = 0
-	var min_x = 0
-	var min_z = 0
-
-	var buildings = {}
-	var used_building_points = {}
-	var building_count = 0
-	for p in map_dictionary.keys():
-		if map_dictionary.get(p) == "BUILDING" and !used_building_points.has(p):
-			var distance_to_center = round((avg_building_point.distance_to(p)/10))	+ 1
-			var building_size = (50/distance_to_center) + randi() % 5
-			var building_height = 2 + randi() % 10
-			var free_directions = find_building_direction(map_dictionary, p)
-			var free_direction = Vector3(0,0,0)
-			if free_directions.has("FORWARD"):
-				free_direction += Vector3.FORWARD
-			if free_directions.has("BACK"):
-				free_direction += Vector3.BACK
-			if free_directions.has("LEFT"):
-				free_direction += Vector3.LEFT
-			if free_directions.has("RIGHT"):
-				free_direction += Vector3.RIGHT
-			
-			if (free_directions.size() == 1):
-				var perp_direction = free_direction.rotated(Vector3.UP, deg2rad(90))
-				var new_building_array = []
-				for i in building_size:
-					for j in building_size:
-						var new_point = p + (free_direction * i) + (perp_direction * j)
-						new_point = new_point.round()
-						if ((map_dictionary.get(new_point) != "ROAD" and map_dictionary.get(new_point) != "PAVEMENT")):
-							new_building_array.push_back(new_point)
-							used_building_points[new_point] = "USED"
-				buildings[buildings.size()] = new_building_array
-
-	for p in map_dictionary.keys():
-		if (p.x > max_x):
-			max_x = p.x
-		if (p.x < min_x):
-			min_x = p.x
-		if (p.z > max_z):
-			max_z = p.z
-		if (p.z < min_z):
-			min_z = p.z
+#	#randomize()
+#	rand_seed(12345)
+#	var map_dictionary = {}
+#	var points = generate_roads(Vector3(0,0,0), 2, SimpleRoads.new(), 3)
 #
-	min_x -= 100
-	max_x += 100
-	min_z -= 100
-	max_z += 100
-
-	print(max_x)
-	print(min_x)
-	print(max_z)
-	print(min_z)
-
-	var vert = 0	
-	var x_size = (max_x - min_x)
-	var z_size = (max_z - min_z) 
-	var z_pos = 0
-	var x_pos = 0
-	
-	
-	var vertices_terrain  : PoolVector3Array
-	var verticies_terrain_collision : PoolVector3Array
-	var indexes_terrain : PoolIntArray
-	var normals_terrain : PoolVector3Array
-	
-	for z in range(min_z, max_z + 1):
-		for x in range(min_x, max_x + 1):
-			vertices_terrain.push_back(Vector3(x, 0, z))
-			normals_terrain.push_back(Vector3.UP)
-			var y = 0
-			var type = map_dictionary.get(Vector3(x, 0, z))
-			if type == "PAVEMENT":
-				y = 0.1
-			elif type == "ROAD":
-				y = 0.05
-			verticies_terrain_collision.push_back(Vector3(x, y, z))
-			
-			if x_pos < x_size and z_pos < z_size:
-				indexes_terrain.push_back(vert + 0)
-				indexes_terrain.push_back(vert + 1)
-				indexes_terrain.push_back(vert + x_size + 1)
-				indexes_terrain.push_back(vert + 1)
-				indexes_terrain.push_back(vert + x_size + 2)
-				indexes_terrain.push_back(vert + x_size + 1)
-			vert += 1
-			x_pos+=1
-		x_pos=0
-		z_pos+=1
-		
-	
-	var arr_mesh = ArrayMesh.new()
-	var arrays = []
-	arrays.resize(ArrayMesh.ARRAY_MAX)
-	arrays[ArrayMesh.ARRAY_VERTEX] = vertices_terrain
-	arrays[ArrayMesh.ARRAY_INDEX] = indexes_terrain
-	arrays[ArrayMesh.ARRAY_NORMAL] = normals_terrain
-#	arrays[ArrayMesh.ARRAY_COLOR] = colors
-
-	var arr_mesh_collision = ArrayMesh.new()
-	var arrays_collision = []
-	arrays_collision.resize(ArrayMesh.ARRAY_MAX)
-	arrays_collision[ArrayMesh.ARRAY_VERTEX] = verticies_terrain_collision
-	arrays_collision[ArrayMesh.ARRAY_INDEX] = indexes_terrain
-	
-	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	arr_mesh_collision.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays_collision)
-	
-	var m = MeshInstance.new()
-	var mat = SpatialMaterial.new()
-	mat.vertex_color_is_srgb = true
-	mat.albedo_color = Color.green
-	mat.vertex_color_use_as_albedo = true
-	mat.flags_use_point_size = true
-	mat.params_point_size = 5
-	mat.params_cull_mode = SpatialMaterial.CULL_DISABLED
-	m.mesh = arr_mesh	
-	m.name="floor"
-	m.set_surface_material(0, mat)
-	m.add_child(entities)
-	$Root.add_child(m)
-	
-	
-	var m_collision = MeshInstance.new()
-	m_collision.mesh = arr_mesh_collision
-	m_collision.create_trimesh_collision()
-	m_collision.name = "floor_collision"
-	m_collision.visible = false
-	$Root.add_child(m_collision)
-	
-	var mmi_roads = MultiMeshInstance.new()
-	var mm_roads = MultiMesh.new()
-	mm_roads.mesh = road_mesh
-	mm_roads.mesh.surface_set_material(0, road_tarmac)
-	mm_roads.transform_format = MultiMesh.TRANSFORM_3D
-	mm_roads.color_format = MultiMesh.COLOR_FLOAT
-	mm_roads.instance_count = 99999
-	mm_roads.visible_instance_count = 0
-	mmi_roads.multimesh = mm_roads
-	
-	var mmi_pavement = MultiMeshInstance.new()
-	var mm_pavement = MultiMesh.new()
-	mm_pavement.mesh = pavement_mesh
-	mm_pavement.mesh.surface_set_material(0, pavement)
-	mm_pavement.transform_format = MultiMesh.TRANSFORM_3D
-	mm_pavement.color_format = MultiMesh.COLOR_FLOAT
-	mm_pavement.instance_count = 99999
-	mm_pavement.visible_instance_count = 0
-	mmi_pavement.multimesh = mm_pavement
-	
-	var road_instance_count = 0
-	var pavement_instance_count = 0
-	for z in range(min_z, max_z):
-		for x in range(min_x, max_x):
-			var p = Vector3(x, 0, z)
-			var type = map_dictionary.get(p)
-			if type == "ROAD":
-				mm_roads.set_instance_transform(road_instance_count, Transform(Basis(), p))
-				road_instance_count+=1
-			elif type == "PAVEMENT":
-				mm_pavement.set_instance_transform(pavement_instance_count, Transform(Basis(), p + Vector3(0, 0.05, 0)))
-				pavement_instance_count+=1
-	
-	mm_roads.visible_instance_count = road_instance_count
-	mm_pavement.visible_instance_count = pavement_instance_count
-	$Root.add_child(mmi_roads)
-	$Root.add_child(mmi_pavement)
+#	for p in points: 
+#		var p1 = p*3+(Vector3(-1,0,1))
+#		var p2 = p*3+(Vector3(0,0,1))
+#		var p3 = p*3+(Vector3(1,0,1))
+#		var p4 = p*3+(Vector3(-1,0,0))
+#		var p5 = p*3+(Vector3(0,0,0))
+#		var p6 = p*3+(Vector3(1,0,0))
+#		var p7 = p*3+(Vector3(-1,0,-1))
+#		var p8 = p*3+(Vector3(0,0,-1))
+#		var p9 = p*3+(Vector3(1,0,-1))
 #
-#	for i in range(200):
-#		entities.add_entity("vehicle","sedan", vehicle_astar.get_point_position(vehicle_points[randi() % vehicle_points.size()-1]))
+#		map_dictionary[p1.round()] = "ROAD"
+#		map_dictionary[p2.round()] = "ROAD"
+#		map_dictionary[p3.round()] = "ROAD"
+#		map_dictionary[p4.round()] = "ROAD"
+#		map_dictionary[p5.round()] = "ROAD"
+#		map_dictionary[p6.round()] = "ROAD"
+#		map_dictionary[p7.round()] = "ROAD"
+#		map_dictionary[p8.round()] = "ROAD"
+#		map_dictionary[p9.round()] = "ROAD"
+#	print(str("Total Roads:", map_dictionary.size()))
+#	var pavement_points = generate_pavement(map_dictionary)
+#	for p in pavement_points:
+#		map_dictionary[p.round()] = "PAVEMENT"
 #
-#	for i in range(1000):
-#		entities.add_entity("pedestrian", "pineapple", pedestrian_astar.get_point_position(pedestrian_points[randi() % pedestrian_points.size()]))
-
-	var building_mesh = CubeMesh.new()
-	building_mesh.size = Vector3(1,4,1)
+#	var vehicle_astar = generate_astar_vehicle(map_dictionary)	
+#	var vehicle_points = vehicle_astar.get_points()
 #
-	var building_mat = SpatialMaterial.new()
-	building_mat.vertex_color_use_as_albedo = true
-	building_mat.flags_unshaded = false
+#	var pedestrian_nav = generate_astar_pedestrian(map_dictionary)
+#	var pedestrian_astar = pedestrian_nav.get("astar")
+#	var pedestrian_points =  pedestrian_astar.get_points()
+#	entities.add_entity_type_astar("vehicle", vehicle_astar, vehicle_points)
+#	entities.add_entity_type_astar("pedestrian", pedestrian_astar, pedestrian_points)
 #
-	var mmi_buiding = MultiMeshInstance.new()
-	var mm_buiding = MultiMesh.new()
-	mm_buiding.mesh = building_mesh
-	mm_buiding.mesh.surface_set_material(0, building_mat)
-	mm_buiding.transform_format = MultiMesh.TRANSFORM_3D
-	mm_buiding.color_format = MultiMesh.COLOR_FLOAT
-	mm_buiding.instance_count = 500000
-	mm_buiding.visible_instance_count = 0
-	mmi_buiding.multimesh = mm_buiding
+#	var building_points = generate_buildings(map_dictionary)
+#	var total_buiilding_points = Vector3(0,0,0)
+#	for p in building_points:
+#		map_dictionary[p] = "BUILDING"
+#		total_buiilding_points += p
 #
-	var building_instance_count = 0
-	for b in buildings:
-		var building_block_points = buildings.get(b)
-		var random_building_color = Color(randf(), randf(), randf())
-		var random_height =1 + randi() % 3 
-		for building_block_point in building_block_points:
-			mm_buiding.set_instance_transform(building_instance_count, Transform(Basis(), building_block_point).scaled(Vector3(1, random_height, 1)))
-			mm_buiding.set_instance_color(building_instance_count, random_building_color)
-			building_instance_count += 1
-	mm_buiding.visible_instance_count = building_instance_count
-	$Root.add_child(mmi_buiding)
-	
-	player = player_scene.instance()
-	player.transform.origin = Vector3(max_x - 20, 0, max_z - 20)
-	player.init($Root, $Root/Rope, projectile_scene)
-	$Root.add_child(player)
-	player.get_node("Camera").current = true
+#	var avg_building_point = total_buiilding_points/building_points.size()
+#
+#	var road_tarmac = SpatialMaterial.new()
+#	road_tarmac.albedo_color = Color8(95, 100, 117)
+#	road_tarmac.vertex_color_use_as_albedo = true
+#
+#	var road_paint = SpatialMaterial.new()
+#	road_paint.albedo_color = Color.white
+#	road_paint.vertex_color_use_as_albedo = true
+#
+#	var pavement = SpatialMaterial.new()
+#	pavement.albedo_color = Color8(224,224,237)
+#	pavement.vertex_color_use_as_albedo = true
+#
+#	var road_mesh = CubeMesh.new()	
+#	road_mesh.size = Vector3(1, 0.1, 1)
+#
+#	var pavement_mesh = CubeMesh.new()
+#	pavement_mesh.size = Vector3(1, 0.1, 1)
+#
+#	var road_middle_mesh = CubeMesh.new()
+#	road_middle_mesh.size = Vector3(0.4,0.5,0.4)
+#
+#	var max_x = 0
+#	var max_z = 0
+#	var min_x = 0
+#	var min_z = 0
+#
+#	var buildings = {}
+#	var used_building_points = {}
+#	var building_count = 0
+#	for p in map_dictionary.keys():
+#		if map_dictionary.get(p) == "BUILDING" and !used_building_points.has(p):
+#			var distance_to_center = round((avg_building_point.distance_to(p)/10))	+ 1
+#			var building_size = (50/distance_to_center) + randi() % 5
+#			var building_height = 2 + randi() % 10
+#			var free_directions = find_building_direction(map_dictionary, p)
+#			var free_direction = Vector3(0,0,0)
+#			if free_directions.has("FORWARD"):
+#				free_direction += Vector3.FORWARD
+#			if free_directions.has("BACK"):
+#				free_direction += Vector3.BACK
+#			if free_directions.has("LEFT"):
+#				free_direction += Vector3.LEFT
+#			if free_directions.has("RIGHT"):
+#				free_direction += Vector3.RIGHT
+#
+#			if (free_directions.size() == 1):
+#				var perp_direction = free_direction.rotated(Vector3.UP, deg2rad(90))
+#				var new_building_array = []
+#				for i in building_size:
+#					for j in building_size:
+#						var new_point = p + (free_direction * i) + (perp_direction * j)
+#						new_point = new_point.round()
+#						if ((map_dictionary.get(new_point) != "ROAD" and map_dictionary.get(new_point) != "PAVEMENT")):
+#							new_building_array.push_back(new_point)
+#							used_building_points[new_point] = "USED"
+#				buildings[buildings.size()] = new_building_array
+#
+#	for p in map_dictionary.keys():
+#		if (p.x > max_x):
+#			max_x = p.x
+#		if (p.x < min_x):
+#			min_x = p.x
+#		if (p.z > max_z):
+#			max_z = p.z
+#		if (p.z < min_z):
+#			min_z = p.z
+##
+#	min_x -= 100
+#	max_x += 100
+#	min_z -= 100
+#	max_z += 100
+#
+#	print(max_x)
+#	print(min_x)
+#	print(max_z)
+#	print(min_z)
+#
+#	var vert = 0	
+#	var x_size = (max_x - min_x)
+#	var z_size = (max_z - min_z) 
+#	var z_pos = 0
+#	var x_pos = 0
+#
+#
+#	var vertices_terrain  : PoolVector3Array
+#	var verticies_terrain_collision : PoolVector3Array
+#	var indexes_terrain : PoolIntArray
+#	var normals_terrain : PoolVector3Array
+#
+#	for z in range(min_z, max_z + 1):
+#		for x in range(min_x, max_x + 1):
+#			vertices_terrain.push_back(Vector3(x, 0, z))
+#			normals_terrain.push_back(Vector3.UP)
+#			var y = 0
+#			var type = map_dictionary.get(Vector3(x, 0, z))
+#			if type == "PAVEMENT":
+#				y = 0.1
+#			elif type == "ROAD":
+#				y = 0.05
+#			verticies_terrain_collision.push_back(Vector3(x, y, z))
+#
+#			if x_pos < x_size and z_pos < z_size:
+#				indexes_terrain.push_back(vert + 0)
+#				indexes_terrain.push_back(vert + 1)
+#				indexes_terrain.push_back(vert + x_size + 1)
+#				indexes_terrain.push_back(vert + 1)
+#				indexes_terrain.push_back(vert + x_size + 2)
+#				indexes_terrain.push_back(vert + x_size + 1)
+#			vert += 1
+#			x_pos+=1
+#		x_pos=0
+#		z_pos+=1
+#
+#
+#	var arr_mesh = ArrayMesh.new()
+#	var arrays = []
+#	arrays.resize(ArrayMesh.ARRAY_MAX)
+#	arrays[ArrayMesh.ARRAY_VERTEX] = vertices_terrain
+#	arrays[ArrayMesh.ARRAY_INDEX] = indexes_terrain
+#	arrays[ArrayMesh.ARRAY_NORMAL] = normals_terrain
+##	arrays[ArrayMesh.ARRAY_COLOR] = colors
+#
+#	var arr_mesh_collision = ArrayMesh.new()
+#	var arrays_collision = []
+#	arrays_collision.resize(ArrayMesh.ARRAY_MAX)
+#	arrays_collision[ArrayMesh.ARRAY_VERTEX] = verticies_terrain_collision
+#	arrays_collision[ArrayMesh.ARRAY_INDEX] = indexes_terrain
+#
+#	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+#	arr_mesh_collision.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays_collision)
+#
+#	var m = MeshInstance.new()
+#	var mat = SpatialMaterial.new()
+#	mat.vertex_color_is_srgb = true
+#	mat.albedo_color = Color.green
+#	mat.vertex_color_use_as_albedo = true
+#	mat.flags_use_point_size = true
+#	mat.params_point_size = 5
+#	mat.params_cull_mode = SpatialMaterial.CULL_DISABLED
+#	m.mesh = arr_mesh	
+#	m.name="floor"
+#	m.set_surface_material(0, mat)
+#	m.add_child(entities)
+#	$Root.add_child(m)
+#
+#
+#	var m_collision = MeshInstance.new()
+#	m_collision.mesh = arr_mesh_collision
+#	m_collision.create_trimesh_collision()
+#	m_collision.name = "floor_collision"
+#	m_collision.visible = false
+#	$Root.add_child(m_collision)
+#
+#	var mmi_roads = MultiMeshInstance.new()
+#	var mm_roads = MultiMesh.new()
+#	mm_roads.mesh = road_mesh
+#	mm_roads.mesh.surface_set_material(0, road_tarmac)
+#	mm_roads.transform_format = MultiMesh.TRANSFORM_3D
+#	mm_roads.color_format = MultiMesh.COLOR_FLOAT
+#	mm_roads.instance_count = 99999
+#	mm_roads.visible_instance_count = 0
+#	mmi_roads.multimesh = mm_roads
+#
+#	var mmi_pavement = MultiMeshInstance.new()
+#	var mm_pavement = MultiMesh.new()
+#	mm_pavement.mesh = pavement_mesh
+#	mm_pavement.mesh.surface_set_material(0, pavement)
+#	mm_pavement.transform_format = MultiMesh.TRANSFORM_3D
+#	mm_pavement.color_format = MultiMesh.COLOR_FLOAT
+#	mm_pavement.instance_count = 99999
+#	mm_pavement.visible_instance_count = 0
+#	mmi_pavement.multimesh = mm_pavement
+#
+#	var road_instance_count = 0
+#	var pavement_instance_count = 0
+#	for z in range(min_z, max_z):
+#		for x in range(min_x, max_x):
+#			var p = Vector3(x, 0, z)
+#			var type = map_dictionary.get(p)
+#			if type == "ROAD":
+#				mm_roads.set_instance_transform(road_instance_count, Transform(Basis(), p))
+#				road_instance_count+=1
+#			elif type == "PAVEMENT":
+#				mm_pavement.set_instance_transform(pavement_instance_count, Transform(Basis(), p + Vector3(0, 0.05, 0)))
+#				pavement_instance_count+=1
+#
+#	mm_roads.visible_instance_count = road_instance_count
+#	mm_pavement.visible_instance_count = pavement_instance_count
+#	$Root.add_child(mmi_roads)
+#	$Root.add_child(mmi_pavement)
+##
+##	for i in range(200):
+##		entities.add_entity("vehicle","sedan", vehicle_astar.get_point_position(vehicle_points[randi() % vehicle_points.size()-1]))
+##
+##	for i in range(1000):
+##		entities.add_entity("pedestrian", "pineapple", pedestrian_astar.get_point_position(pedestrian_points[randi() % pedestrian_points.size()]))
+#
+#	var building_mesh = CubeMesh.new()
+#	building_mesh.size = Vector3(1,4,1)
+##
+#	var building_mat = SpatialMaterial.new()
+#	building_mat.vertex_color_use_as_albedo = true
+#	building_mat.flags_unshaded = false
+##
+#	var mmi_buiding = MultiMeshInstance.new()
+#	var mm_buiding = MultiMesh.new()
+#	mm_buiding.mesh = building_mesh
+#	mm_buiding.mesh.surface_set_material(0, building_mat)
+#	mm_buiding.transform_format = MultiMesh.TRANSFORM_3D
+#	mm_buiding.color_format = MultiMesh.COLOR_FLOAT
+#	mm_buiding.instance_count = 500000
+#	mm_buiding.visible_instance_count = 0
+#	mmi_buiding.multimesh = mm_buiding
+##
+#	var building_instance_count = 0
+#	for b in buildings:
+#		var building_block_points = buildings.get(b)
+#		var random_building_color = Color(randf(), randf(), randf())
+#		var random_height =1 + randi() % 3 
+#		for building_block_point in building_block_points:
+#			mm_buiding.set_instance_transform(building_instance_count, Transform(Basis(), building_block_point).scaled(Vector3(1, random_height, 1)))
+#			mm_buiding.set_instance_color(building_instance_count, random_building_color)
+#			building_instance_count += 1
+#	mm_buiding.visible_instance_count = building_instance_count
+#	$Root.add_child(mmi_buiding)
+#
+#	player = player_scene.instance()
+#	player.transform.origin = Vector3(max_x - 20, 0, max_z - 20)
+#	player.init($Root, $Root/Rope, projectile_scene)
+#	$Root.add_child(player)
+#	player.get_node("Camera").current = true
 	
 # -----------------------
 

@@ -1,95 +1,65 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Scenes/ShopUI.gd" type="Script" id=1]
-
-[sub_resource type="StyleBoxFlat" id=1]
-bg_color = Color( 0.298039, 0.298039, 0.298039, 1 )
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color( 1, 1, 1, 1 )
-border_blend = true
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
 
 [sub_resource type="DynamicFontData" id=2]
 font_path = "res://Fonts/Palette-regular.otf"
 
 [sub_resource type="DynamicFont" id=3]
-size = 50
+size = 24
 font_data = SubResource( 2 )
 
-[sub_resource type="DynamicFontData" id=7]
+[sub_resource type="DynamicFontData" id=4]
 font_path = "res://Fonts/Palette-regular.otf"
 
-[sub_resource type="DynamicFont" id=8]
+[sub_resource type="DynamicFont" id=5]
 size = 72
 outline_size = 5
 outline_color = Color( 0, 0, 0, 1 )
-font_data = SubResource( 7 )
+font_data = SubResource( 4 )
 
 [sub_resource type="Environment" id=6]
 ambient_light_color = Color( 1, 1, 1, 1 )
 ambient_light_energy = 8.25
 
 [node name="ShopUi" type="Control"]
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = -1024.0
-margin_top = -600.0
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -512.0
+margin_right = 512.0
+margin_bottom = 600.0
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Order" type="Panel" parent="."]
-anchor_top = 1.0
-anchor_bottom = 1.0
-margin_left = 50.0
-margin_top = -170.0
-margin_right = 510.0
-margin_bottom = -50.0
-rect_min_size = Vector2( 480, 100 )
-custom_styles/panel = SubResource( 1 )
+[node name="TextureRect" type="TextureRect" parent="."]
+margin_left = 22.1145
+margin_top = 43.0812
+margin_right = 472.115
+margin_bottom = 113.081
+rect_min_size = Vector2( 450, 70 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="TextureRect" type="TextureRect" parent="Order"]
-margin_left = 8.0
-margin_top = 7.0
-margin_right = 458.0
-margin_bottom = 117.0
-rect_min_size = Vector2( 450, 110 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Label" type="Label" parent="Order"]
-margin_left = 16.0
-margin_top = -73.0
-margin_right = 782.0
-margin_bottom = -19.0
+[node name="Label" type="Label" parent="."]
+margin_left = 27.8849
+margin_top = 23.1323
+margin_right = 430.885
+margin_bottom = 48.1323
 custom_fonts/font = SubResource( 3 )
-text = "Customer Order: ${Random Drink Name}"
+text = "Ingrediants:"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Button" type="Button" parent="Order"]
-anchor_left = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = 25.0032
-margin_top = 2.24493
-margin_right = 225.003
-margin_bottom = 2.24493
-custom_fonts/font = SubResource( 8 )
+[node name="GoButton" type="Button" parent="."]
+margin_left = 437.552
+margin_top = 12.6935
+margin_right = 559.552
+margin_bottom = 93.6935
+custom_fonts/font = SubResource( 5 )
 custom_colors/font_color = Color( 1, 1, 1, 1 )
 custom_colors/font_color_hover = Color( 0.8, 0.27451, 0, 1 )
 text = "Go!"
@@ -100,6 +70,7 @@ __meta__ = {
 [node name="Viewport" type="Viewport" parent="."]
 size = Vector2( 450, 110 )
 own_world = true
+transparent_bg = true
 hdr = false
 render_target_v_flip = true
 
@@ -115,6 +86,10 @@ near = 0.01
 
 [node name="DirectionalLight" type="DirectionalLight" parent="Viewport/Spatial/Camera"]
 transform = Transform( -1.62921e-07, 0.707107, -0.707107, 0, 0.707107, 0.707107, 1, 1.15202e-07, -1.15202e-07, 0, 1.74058, 1.18251 )
+light_energy = 6.75
+
+[node name="DirectionalLight2" type="DirectionalLight" parent="Viewport/Spatial/Camera"]
+transform = Transform( -1.62921e-07, 0.707107, 0.707107, 0, 0.707107, -0.707107, -1, -1.15202e-07, -1.15202e-07, 0, 1.74058, 1.18251 )
 light_energy = 6.75
 
 [node name="Middle" type="Spatial" parent="Viewport/Spatial"]

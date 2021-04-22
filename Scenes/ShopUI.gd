@@ -1,10 +1,17 @@
 extends Control
 
+signal go_pressed
 
 var scene_dictionary = {}
 var fruit_data = {}
 var drink_order = []
 var fruits = []
+
+func _ready():
+	$GoButton.connect("pressed", self, "_go_pressed")
+
+func _go_pressed():
+	emit_signal("go_pressed")
 
 func init(drink_order, fruit_data, scene_dictionary):
 	self.drink_order = drink_order
@@ -21,8 +28,14 @@ func create_fruits():
 		fruit.gravity_scale = 0
 		fruits.push_back(fruit)
 		starting_point.add_child(fruit)
+		
+func show_go():
+	$GoButton.show()
+
+func hide_go():
+	$GoButton.hide()
 
 func _process(delta):	
 	for fruit in fruits:
 		fruit.rotate_y(delta)
-	$Order/TextureRect.texture = $Viewport.get_texture()
+	$TextureRect.texture = $Viewport.get_texture()

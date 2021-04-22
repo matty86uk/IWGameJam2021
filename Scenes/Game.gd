@@ -8,16 +8,19 @@ var main_menu_scene = load("res://Scenes/MainMenu.tscn")
 var main_menu
 var shop_world
 
-
 var scene_dictionary = {}
 var game_data_dictionary = {}
 var game_data_total_entities = {"vehicle":200, "pedestrian":500}
 
-
 func _ready():
 	main_menu_scene()
 	#blender_scene()
-	#fruit_world_scene()
+	#fruit_world_scene()	
+	
+func _load_fruit_world():
+	print("load world")
+	fruit_world_scene()
+	shop_world.hide()
 
 func fruit_world_scene():
 	world.generate_world(12345)
@@ -53,6 +56,9 @@ func fruit_world_scene():
 				index += 1
 
 	world.spawn_player()
+	world.move_camera("Start")
+	world.set_current_camera()
+	world.transition_camera("Final")
 
 func blender_scene():
 	var blender = blender_scene.instance()
@@ -74,6 +80,7 @@ func main_menu_scene():
 	main_menu = main_menu_scene.instance()
 	main_menu.connect("start_game", self, "_start_game")
 	
+	shop_world.connect("load_fruit_world", self, "_load_fruit_world")
 	add_child(shop_world)
 	add_child(main_menu)
 
@@ -90,8 +97,6 @@ func random_fruits():
 		var random_fruit = fruits[randi() % fruits.size()]
 		chosen_fruits.push_back(random_fruit["name"])
 	return chosen_fruits
-
-
 
 func add_scene_dictionary(dictionary, key, game_data):
 	scene_dictionary[key] = dictionary

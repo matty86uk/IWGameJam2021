@@ -230,7 +230,7 @@ transform = Transform( -1.62921e-07, -0.32, 0, 1, -5.21346e-08, 0, 0, 0, 1, 0, 0
 shape = SubResource( 5 )
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 10, 10 )
+transform = Transform( 1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 10, 1 )
 doppler_tracking = 2
 fov = 62.4
 near = 0.01
@@ -265,3 +265,12 @@ margin_bottom = 67.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="CameraStart" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 6 )
+
+[node name="CameraMiddle" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 5 )
+
+[node name="CameraFinal" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 2 )
