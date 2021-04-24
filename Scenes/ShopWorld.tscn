@@ -1,4 +1,4 @@
-[gd_scene load_steps=57 format=2]
+[gd_scene load_steps=58 format=2]
 
 [ext_resource path="res://Materials/wood.material" type="Material" id=1]
 [ext_resource path="res://Entities/ShopStuff/soda.tscn" type="PackedScene" id=2]
@@ -111,14 +111,14 @@ size = Vector3( 6, 3, 3 )
 [sub_resource type="SpatialMaterial" id=27]
 albedo_color = Color( 0.345098, 0.345098, 0.345098, 1 )
 
-[sub_resource type="CubeMesh" id=42]
+[sub_resource type="CubeMesh" id=28]
 flip_faces = true
 size = Vector3( 0.8, 0.8, 6 )
 
-[sub_resource type="SpatialMaterial" id=43]
+[sub_resource type="SpatialMaterial" id=29]
 flags_unshaded = true
 
-[sub_resource type="SpatialMaterial" id=28]
+[sub_resource type="SpatialMaterial" id=30]
 flags_do_not_receive_shadows = true
 flags_ensure_correct_normals = true
 params_diffuse_mode = 4
@@ -126,52 +126,57 @@ albedo_texture = ExtResource( 15 )
 uv1_offset = Vector3( 0.25, 0.1, 0 )
 uv1_triplanar_sharpness = 0.0371627
 
-[sub_resource type="SphereMesh" id=29]
-material = SubResource( 28 )
+[sub_resource type="SphereMesh" id=31]
+material = SubResource( 30 )
 radius = 0.8
 height = 1.6
 radial_segments = 12
 
-[sub_resource type="ViewportTexture" id=30]
+[sub_resource type="ViewportTexture" id=32]
 viewport_path = NodePath("Ground/Building/MeshInstance2/Viewport")
 
-[sub_resource type="SpatialMaterial" id=31]
+[sub_resource type="SpatialMaterial" id=33]
 resource_local_to_scene = true
 flags_unshaded = true
 params_billboard_keep_scale = true
-albedo_texture = SubResource( 30 )
+albedo_texture = SubResource( 32 )
 
-[sub_resource type="QuadMesh" id=32]
-material = SubResource( 31 )
+[sub_resource type="QuadMesh" id=34]
+material = SubResource( 33 )
 size = Vector2( 5, 4 )
 
-[sub_resource type="DynamicFontData" id=33]
+[sub_resource type="DynamicFontData" id=35]
 font_path = "res://Fonts/Radical-regular.otf"
 
-[sub_resource type="DynamicFont" id=34]
+[sub_resource type="DynamicFont" id=36]
 size = 100
 outline_size = 2
 outline_color = Color( 0, 0, 0, 1 )
 use_mipmaps = true
 use_filter = true
-font_data = SubResource( 33 )
+font_data = SubResource( 35 )
 
-[sub_resource type="QuadMesh" id=35]
+[sub_resource type="QuadMesh" id=37]
 size = Vector2( 0.38, 0.24 )
-
-[sub_resource type="DynamicFontData" id=36]
-font_path = "res://Fonts/Tribe-regular.otf"
-
-[sub_resource type="DynamicFont" id=37]
-size = 32
-font_data = SubResource( 36 )
 
 [sub_resource type="DynamicFontData" id=38]
 font_path = "res://Fonts/Tribe-regular.otf"
 
 [sub_resource type="DynamicFont" id=39]
-size = 50
+size = 32
 font_data = SubResource( 38 )
+
+[sub_resource type="DynamicFontData" id=40]
+font_path = "res://Fonts/Tribe-regular.otf"
+
+[sub_resource type="DynamicFont" id=41]
+size = 50
+font_data = SubResource( 40 )
+
+[sub_resource type="Environment" id=42]
+background_mode = 1
+background_color = Color( 1, 1, 1, 1 )
+ambient_light_color = Color( 1, 1, 1, 1 )
 
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 4 )
@@ -271,18 +276,20 @@ transform = Transform( -3.25841e-07, 0, 1, 0, 2, 0, -2, 0, -1.62921e-07, -2.3044
 
 [node name="PortalTunnel" type="MeshInstance" parent="Ground/Building/Computer/gate_simple"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.38419e-07, 0.781153, -3.15882 )
-mesh = SubResource( 42 )
-material/0 = SubResource( 43 )
+visible = false
+mesh = SubResource( 28 )
+material/0 = SubResource( 29 )
 
 [node name="Car" parent="Ground/Building/Computer" instance=ExtResource( 7 )]
 transform = Transform( -1.62921e-07, 0, 1, 0, 1, 0, -1, 0, -1.62921e-07, 1.63921, 1.41989, 0 )
 
 [node name="CarCamera" type="Camera" parent="Ground/Building/Computer/Car"]
 transform = Transform( 1, 0, -3.12639e-13, 0, 1, 0, 3.12639e-13, 0, 1, 1.43051e-06, 0.98319, 1.09551 )
+current = true
 
 [node name="Portal" type="MeshInstance" parent="Ground/Building/Computer"]
 transform = Transform( 0.1, 0, 0, 0, -0.173648, -0.984808, 0, 0.984808, -0.173648, -2.58604, 2.0438, 0 )
-mesh = SubResource( 29 )
+mesh = SubResource( 31 )
 material/0 = null
 
 [node name="PortalTarget" type="Spatial" parent="Ground/Building/Computer"]
@@ -290,7 +297,7 @@ transform = Transform( 0.1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 2.044, 0 )
 
 [node name="PortalSign" type="MeshInstance" parent="Ground/Building"]
 transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, -9.22027, 3.07613, 3.67867 )
-mesh = SubResource( 32 )
+mesh = SubResource( 34 )
 skeleton = NodePath("")
 material/0 = null
 script = ExtResource( 8 )
@@ -316,7 +323,7 @@ __meta__ = {
 [node name="Label" type="Label" parent="Ground/Building/PortalSign/Viewport/ViewportContainer"]
 margin_right = 655.0
 margin_bottom = 36.0
-custom_fonts/font = SubResource( 34 )
+custom_fonts/font = SubResource( 36 )
 custom_colors/font_color = Color( 1, 1, 1, 1 )
 text = "Fruitiverse Portal 
 Generator 9000!"
@@ -328,7 +335,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -8.91743, 0, 0 )
 
 [node name="ComputerScreen" type="MeshInstance" parent="Ground/Building/Spatial"]
 transform = Transform( -4.5, 2.43882e-07, -1.73531e-06, 0, 4.45621, 0.626279, 1.75236e-06, 0.626279, -4.45621, 1.20403, 2.49119, 0.358029 )
-mesh = SubResource( 35 )
+mesh = SubResource( 37 )
 material/0 = null
 script = ExtResource( 14 )
 
@@ -357,7 +364,7 @@ margin_left = 40.0
 margin_top = 100.0
 margin_right = 980.0
 margin_bottom = 550.0
-custom_fonts/font = SubResource( 37 )
+custom_fonts/font = SubResource( 39 )
 syntax_highlighting = true
 show_line_numbers = true
 smooth_scrolling = true
@@ -370,7 +377,7 @@ script = ExtResource( 13 )
 [node name="RichTextLabel" type="RichTextLabel" parent="Ground/Building/Spatial/ComputerScreen/Viewport/Control/ViewportContainer"]
 margin_right = 1020.0
 margin_bottom = 100.0
-custom_fonts/normal_font = SubResource( 39 )
+custom_fonts/normal_font = SubResource( 41 )
 bbcode_enabled = true
 bbcode_text = "[center]Fruit[color=#4ab3ff]OS"
 text = "FruitOS"
@@ -403,6 +410,7 @@ transform = Transform( -1.62921e-07, 3.25841e-07, 1, 0, -1, 3.25841e-07, 1, 5.30
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 4.03212, 4.73592, -0.313798 )
+environment = SubResource( 42 )
 
 [node name="CashRegister" type="AudioStreamPlayer3D" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3881, -1.67833 )

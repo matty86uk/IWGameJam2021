@@ -1,5 +1,8 @@
 extends Spatial
 
+signal finished_loading
+var loading_thread = Thread.new()
+
 var world = load("res://Scenes/FruitWorld.tscn").instance()
 var blender_scene = load("res://Scenes/BlenderScene.tscn")
 var shop_world_scene = load("res://Scenes/ShopWorld.tscn")
@@ -12,19 +15,25 @@ var scene_dictionary = {}
 var game_data_dictionary = {}
 var game_data_total_entities = {"vehicle":200, "pedestrian":500}
 
+
 func _ready():
-	main_menu_scene()
-	#blender_scene()
-	#fruit_world_scene()	
+	main_menu_scene()	
 	
 func _load_fruit_world():
+	connect("finished_loading", self, "_finished_loading")
 	print("load world")
-	fruit_world_scene()
+	
+#	var error = loading_thread.start(self, "fruit_world_scene", "")
+#	print("thread:", error)
+	fruit_world_scene("")
+	_finished_loading()
 	shop_world.hide()
 
-func fruit_world_scene():
+
+	
+
+func fruit_world_scene(userdata):
 	world.generate_world(12345)
-	add_child(world)
 	
 	for type in game_data_dictionary.keys():
 		var subtypes = []
@@ -54,12 +63,19 @@ func fruit_world_scene():
 			for subtype in subtype_list:
 				world.create_entity(type, subtype)
 				index += 1
-
-	world.spawn_player()
+	print("loaded")
+	#emit_signal("finished_loading")
+	
+func _finished_loading():
+	#print("Thread Active:", loading_thread.is_active())
+	print("finished loading")
+	add_child(world)
+	world.spawn_player(game_data_dictionary["pedestrian"], scene_dictionary["pedestrian"], shop_world.get_drink_order())
 	world.move_camera("Start")
 	world.set_current_camera()
 	world.transition_camera("Final")
-
+	print("drink order:", shop_world.get_drink_order())
+	
 func blender_scene():
 	var blender = blender_scene.instance()
 	var fruits = random_fruits()

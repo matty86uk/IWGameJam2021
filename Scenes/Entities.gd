@@ -68,8 +68,10 @@ func add_vehicle(type, subtype, position):
 	for child in new_entity_scene.get_children():
 		new_entity_scene.remove_child(child)
 		new_vehicle.add_child(child)
-	new_vehicle.state = new_vehicle.STATE_INSTANCED	
-	add_child(new_vehicle)	
+	new_vehicle.state = new_vehicle.STATE_INSTANCED
+	new_vehicle.set_meta("type", type)
+	new_vehicle.set_meta("subtype", subtype)
+	add_child(new_vehicle)
 	vehicles.push_back(new_vehicle)
 
 func add_pedestrian(type, subtype, position):
@@ -80,8 +82,11 @@ func add_pedestrian(type, subtype, position):
 		new_entity_scene.remove_child(child)
 		new_pedestrian.add_child(child)
 	new_pedestrian.state = new_pedestrian.STATE_INSTANCED
+	new_pedestrian.set_meta("type", type)
+	new_pedestrian.set_meta("subtype", subtype)
 	add_child(new_pedestrian)
 	pedestrians.push_back(new_pedestrian)
+	
 	
 func _process(delta):
 	for vehicle in vehicles:

@@ -147,6 +147,9 @@ func order_arrived():
 	
 	shop_ui.connect("go_pressed", self, "_go_pressed")
 
+func get_drink_order():
+	return drink_order
+
 func _go_pressed():
 	if not portal_room:
 		portal_camera()

@@ -12,7 +12,7 @@ func _ready():
 	print(p1 + Vector3.FORWARD/4 * 2)
 	print(p2 + Vector3.BACK/4)
 	print(p2 + Vector3.BACK/4 * 2)
-		
+
 	var vehicle_dictionary = load_vehicle_scenes()
 	game.add_scene_dictionary(vehicle_dictionary, "vehicle", load_json_file("res://Data/vehicles.tres"))
 
