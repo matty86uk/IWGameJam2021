@@ -10,7 +10,7 @@ func init(node_to_exclude, return_node):
 	add_collision_exception_with(node_to_exclude)
 	self.return_node = return_node
 
-func _ready():	
+func _ready():
 	pass
 
 func _physics_process(delta):	

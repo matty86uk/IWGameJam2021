@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=2]
+[gd_scene load_steps=22 format=2]
 
 [ext_resource path="res://Entities/PlayerVehicle1.gd" type="Script" id=1]
 [ext_resource path="res://Entities/Vehicles/gltf/lightFront.material" type="Material" id=2]
@@ -9,6 +9,9 @@
 [ext_resource path="res://Entities/Vehicles/gltf/carTire.material" type="Material" id=7]
 [ext_resource path="res://Entities/Vehicles/gltf/paintGreen.material" type="Material" id=8]
 [ext_resource path="res://Entities/Vehicles/gltf/plastic.material" type="Material" id=9]
+[ext_resource path="res://Audio/engine_heavy_loop.wav" type="AudioStream" id=10]
+[ext_resource path="res://Audio/Blastwave_FX_TruckTiresScreech_BW.62488.wav" type="AudioStream" id=11]
+[ext_resource path="res://Audio/zapsplat_impacts_car_crash_smash_head_on_23549.wav" type="AudioStream" id=12]
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "body"
@@ -231,7 +234,6 @@ material/2 = null
 
 [node name="CollisionBody" type="CollisionShape" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0 )
-visible = false
 shape = SubResource( 4 )
 disabled = true
 
@@ -246,6 +248,7 @@ shape = SubResource( 5 )
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 10, 1 )
 doppler_tracking = 2
+current = true
 fov = 62.4
 near = 0.01
 far = 8192.0
@@ -289,6 +292,9 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 5 )
 [node name="CameraFinal" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 2 )
 
+[node name="CameraFinalReverse" type="Spatial" parent="."]
+transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 2, -2 )
+
 [node name="CollisionShape" type="CollisionShape" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, -0.450248 )
 shape = SubResource( 6 )
@@ -313,5 +319,28 @@ shape = SubResource( 9 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0.3 )
 shape = SubResource( 9 )
 
-[node name="VanCam" type="Camera" parent="."]
-transform = Transform( 0.707107, -0.353553, 0.612373, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 0.215, 0.798266, 0.666 )
+[node name="DropPoint" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.713759, 0.02436 )
+
+[node name="VanCamViewPort" type="Viewport" parent="."]
+size = Vector2( 300, 150 )
+transparent_bg = true
+render_target_v_flip = true
+
+[node name="VanCam" type="Camera" parent="VanCamViewPort"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.46945, 0 )
+current = true
+near = 0.01
+
+[node name="VanCameraPoint" type="Camera" parent="."]
+transform = Transform( 0.984808, -0.0868241, 0.150384, 0, 0.866025, 0.5, -0.173648, -0.492404, 0.852868, 0.189469, 0.824816, 0.665013 )
+near = 0.01
+
+[node name="Engine" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 10 )
+
+[node name="Tyre" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 11 )
+
+[node name="Crash" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 12 )

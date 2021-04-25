@@ -1,12 +1,36 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Entities/BaseVehicleRigid.gd" type="Script" id=1]
+[ext_resource path="res://Audio/transport_car_horn_beep_short.wav" type="AudioStream" id=2]
+[ext_resource path="res://Audio/engine_heavy_slow_loop.wav" type="AudioStream" id=3]
+[ext_resource path="res://Audio/zapsplat_impacts_metal_box_hit_hammer_001_38960.wav" type="AudioStream" id=4]
 
 [node name="Vehicle" type="RigidBody"]
 transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0 )
+contacts_reported = 3
+contact_monitor = true
 linear_damp = 1.0
 angular_damp = 6.0
 script = ExtResource( 1 )
 
 [node name="RayCast" type="RayCast" parent="."]
+cast_to = Vector3( 0, -0.5, 0 )
+
+[node name="ForwardCast" type="RayCast" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.000298858, 0.25, -0.00196522 )
 enabled = true
+cast_to = Vector3( 0, 0, -2 )
+
+[node name="Beep" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 2 )
+doppler_tracking = 2
+
+[node name="Engine" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 3 )
+unit_db = -1.0
+max_db = 1.0
+doppler_tracking = 2
+
+[node name="Crash" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 4 )
+unit_db = 3.0

@@ -15,22 +15,17 @@ var scene_dictionary = {}
 var game_data_dictionary = {}
 var game_data_total_entities = {"vehicle":200, "pedestrian":500}
 
-
 func _ready():
-	main_menu_scene()	
+	main_menu_scene()
 	
 func _load_fruit_world():
 	connect("finished_loading", self, "_finished_loading")
 	print("load world")
 	
-#	var error = loading_thread.start(self, "fruit_world_scene", "")
-#	print("thread:", error)
 	fruit_world_scene("")
 	_finished_loading()
 	shop_world.hide()
-
-
-	
+	world.show_player_ui()
 
 func fruit_world_scene(userdata):
 	world.generate_world(12345)

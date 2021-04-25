@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/truck_low_engine_rattle_loop.wav-345ed3bb2d1a7411fb7ae30dd48b5c3a.sample"
+
+[deps]
+
+source_file="res://Audio/truck_low_engine_rattle_loop.wav"
+dest_files=[ "res://.import/truck_low_engine_rattle_loop.wav-345ed3bb2d1a7411fb7ae30dd48b5c3a.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0

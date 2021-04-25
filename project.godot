@@ -10,13 +10,12 @@ config_version=4
 
 _global_script_classes=[  ]
 _global_script_class_icons={
-
 }
 
 [application]
 
 config/name="Iw Game Jam 2021"
-run/main_scene="res://Scenes/FruitWorld.tscn"
+run/main_scene="res://Main.tscn"
 config/icon="res://icon.png"
 
 [global]
@@ -56,6 +55,10 @@ reel={
 "events": [ Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"button_mask":0,"position":Vector2( 0, 0 ),"global_position":Vector2( 0, 0 ),"factor":1.0,"button_index":2,"pressed":false,"doubleclick":false,"script":null)
  ]
 }
+
+[physics]
+
+common/physics_fps=30
 
 [rendering]
 

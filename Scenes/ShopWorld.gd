@@ -72,7 +72,6 @@ func _ready():
 	portal_mi_material.albedo_color = Color.black
 	#portal_mi.material_override = portal_mi_material
 	
-	
 	terminal = $Ground/Building/Spatial/ComputerScreen/Viewport/Control/ViewportContainer/Terminal
 	
 func _process(delta):
@@ -163,6 +162,7 @@ func random_order():
 	var total = randi() % 3 + 4
 	for i in range(total):
 		order.push_back(randi() % fruit_data.size())
+	order.sort()
 	return order
 	
 func shop_camera():

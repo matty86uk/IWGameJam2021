@@ -6,6 +6,8 @@ var base_pedestrian = preload("res://Entities/BasePedestrian.tscn")
 var base_vehicle = preload("res://Entities/BaseVehicleRigid.tscn")
 #var base_vehicle_gsai = preload("res://Entities/BaseVehicleGSAI.tscn")
 
+#var entity_thread= Thread.new()
+
 var entity_types = {}
 var entities = {}
 var entity_mmi = {}
@@ -20,10 +22,16 @@ var astar_points_dictionary = {}
 var mi_debug = MeshInstance.new()
 var mat_debug = SpatialMaterial.new()
 
+var entity_tick = 0
+
 func _ready():
 	mat_debug.vertex_color_use_as_albedo = true	
 	mat_debug.flags_unshaded = true
 	add_child(mi_debug)
+
+func start_entity_loop():
+	pass
+	#entity_thread.start(self, "entity_loop", "", 0)
 
 func add_entity_type(type, subtypes, scenes):
 	var subtypes_dictionary = {}
@@ -89,37 +97,73 @@ func add_pedestrian(type, subtype, position):
 	
 	
 func _process(delta):
-	for vehicle in vehicles:
-		var vehicle_state = vehicle.state
-		var next_vehicle_state = null
-		match vehicle_state:
-			vehicle.STATE_INSTANCED:
-				next_vehicle_state = vehicle.STATE_READY
-			vehicle.STATE_READY:
-				var path = generate_vehicle_path(vehicle.global_transform.origin)
-				vehicle.path_index = 0
-				if path.size() > 0:
-					vehicle.set_path(path)
-					next_vehicle_state = vehicle.STATE_HAS_ORDERS
-				else:				
-					print("No path")
-					var new_path = []
-					new_path.push_back(vehicle.transform.origin)
-					new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD))
-					new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD * 2))
-					new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD * 3))
-					new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD * 4))
-					vehicle.set_path(new_path)
-					next_vehicle_state = vehicle.STATE_HAS_ORDERS
-			vehicle.STATE_HAS_ORDERS:
-#				vehicle.path_index = 0
-				#debug_show_path(vehicle)
-				next_vehicle_state = vehicle.STATE_ENABLED
-			vehicle.STATE_ENABLED:
-				#pass
-				move_vehicle(vehicle)
-		if next_vehicle_state:
-			vehicle.state = next_vehicle_state
+	entity_loop()
+	pass
+	
+func entity_loop():	
+	
+		for vehicle in vehicles:
+			var vehicle_state = vehicle.state
+			var next_vehicle_state = null
+			match vehicle_state:
+				vehicle.STATE_INSTANCED:
+					next_vehicle_state = vehicle.STATE_READY
+				vehicle.STATE_READY:
+					var path = generate_vehicle_path(vehicle.global_transform.origin)
+					vehicle.path_index = 0
+					if path.size() > 0:
+						vehicle.set_path(path)
+						next_vehicle_state = vehicle.STATE_HAS_ORDERS
+					else:				
+						print("No path")
+						var new_path = []
+						new_path.push_back(vehicle.transform.origin)
+						new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD))
+						new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD * 2))
+						new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD * 3))
+						new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD * 4))
+						vehicle.set_path(new_path)
+						next_vehicle_state = vehicle.STATE_HAS_ORDERS
+				vehicle.STATE_HAS_ORDERS:
+	#				vehicle.path_index = 0
+					#debug_show_path(vehicle)
+					next_vehicle_state = vehicle.STATE_ENABLED
+				vehicle.STATE_ENABLED:
+					check_vehicle_point(vehicle)
+			if next_vehicle_state:
+				vehicle.state = next_vehicle_state
+
+		for pedestrian in pedestrians:
+			var pedestrian_state = pedestrian.state
+			var next_pedestrian_state = null
+			match pedestrian_state:
+				pedestrian.STATE_INSTANCED:
+					next_pedestrian_state = pedestrian.STATE_READY
+				pedestrian.STATE_READY:
+					var path = generate_pedestrian_path(pedestrian.global_transform.origin)
+					pedestrian.path_index = 0
+					if path.size() > 0:
+						pedestrian.set_path(path)
+						next_pedestrian_state = pedestrian.STATE_HAS_ORDERS
+					else:				
+						print("No path")
+						var new_path = []
+						new_path.push_back(pedestrian.transform.origin)
+						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD))
+						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD * 2))
+						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD * 3))
+						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD * 4))
+						pedestrian.set_path(new_path)
+						next_pedestrian_state = pedestrian.STATE_HAS_ORDERS
+				pedestrian.STATE_HAS_ORDERS:
+	#				vehicle.path_index = 0
+					#debug_show_path(vehicle)
+					next_pedestrian_state = pedestrian.STATE_ENABLED
+				pedestrian.STATE_ENABLED:
+					check_pedestrian_point(pedestrian)
+			if next_pedestrian_state:
+				pedestrian.state = next_pedestrian_state
+
 #
 #func _process(delta):
 #	pass
@@ -133,7 +177,13 @@ func generate_vehicle_path(from):
 #	path.push_back(Vector3(0,0,-19))
 #	return path
 	return astar.get_point_path(from_point, to_point)
-
+	
+func generate_pedestrian_path(from):
+	var astar = astar_dictionary["pedestrian"]
+	var from_point = astar.get_closest_point(from)
+	var to_point = astar_points_dictionary["pedestrian"][randi() % astar_points_dictionary["pedestrian"].size()-1]
+	return astar.get_point_path(from_point, to_point)
+	
 func debug_show_path(vehicle):
 	var st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_LINES)
@@ -151,15 +201,30 @@ func debug_show_path(vehicle):
 	mi.material_override = mat
 	add_child(mi)
 	
-func move_vehicle(vehicle):
-	pass
+func check_vehicle_point(vehicle):	
 	if vehicle.path.size() > 0 and  vehicle.path_index < vehicle.path.size():
 		var target = vehicle.path[vehicle.path_index]
 		var from = vehicle.get_global_transform().origin
-		if from.distance_squared_to(target) < 1:
+		var distance =  from.distance_squared_to(target)
+		if distance < 3:
 			vehicle.path_index += 1
-		else:
-			vehicle.forward()
+#		elif distance > 6:
+#			vehicle.state = vehicle.STATE_READY		
 	else:
+		print("new orders")
 		vehicle.state = vehicle.STATE_READY
+
+func check_pedestrian_point(pedestrian):
+	if pedestrian.path.size() > 0 and  pedestrian.path_index < pedestrian.path.size():
+		var target = pedestrian.path[pedestrian.path_index]
+		var from = pedestrian.get_global_transform().origin
+		var distance =  from.distance_squared_to(target)
+		if distance < 1:
+			pedestrian.path_index += 1
+#		elif distance > 6:
+#			pedestrian.state = pedestrian.STATE_READY		
+	else:
+		print("new orders")
+		pedestrian.state = pedestrian.STATE_READY
+	pass
 

@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/engine_heavy_loop.wav-0bb10b8cadbcbd812cee18708e7900aa.sample"
+
+[deps]
+
+source_file="res://Audio/engine_heavy_loop.wav"
+dest_files=[ "res://.import/engine_heavy_loop.wav-0bb10b8cadbcbd812cee18708e7900aa.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=true
+compress/mode=0

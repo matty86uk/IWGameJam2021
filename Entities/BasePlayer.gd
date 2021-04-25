@@ -27,10 +27,19 @@ func _physics_process(delta):
 		calculate_steering(delta)
 	acceleration.y = gravity
 	velocity += acceleration * delta
-#	var collision = move_and_collide(velocity, false, true, true)
+	
 #	var collider = collision["collider"]
 #	if collider is KinematicBody:
 #		collider.collide(transform.basis.z * (velocity * 0.2), collision["position"])
+#	var collision = move_and_collide(velocity, false, true, true)
+#	if collision.collider:
+#		if collision.collider is StaticBody:
+#			var parent =  collision.collider.get_parent()
+#			if parent.name == "floor_collision":
+#				#print("Skipping collision sound")
+#				pass
+#			else:
+#				$Crash.play()
 	velocity = move_and_slide_with_snap(velocity, -transform.basis.y, Vector3.UP, true) 
 
 func apply_friction(delta):

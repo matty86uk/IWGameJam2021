@@ -30,7 +30,11 @@ var mi_debug = MeshInstance.new()
 var mat_debug = SpatialMaterial.new()
 
 var frame_count = 0
-var next_physics_frame = 1
+var next_physics_frame = 4
+
+var forward_cast_check_time = 0
+var forward_cast_check_time_max = 2000
+var last_check_obstacle = false
 
 func _ready():
 	mat_debug.vertex_color_use_as_albedo  = true
@@ -38,21 +42,47 @@ func _ready():
 	mat_debug.flags_use_point_size = true
 	mat_debug.params_point_size = 4
 	mi_debug.material_override = mat_debug
-	
+	forward_cast_check_time = OS.get_ticks_msec() + randi() % 10000
 	add_child(mi_debug)
 	
+	frame_count = randi() % 4
+	
+	$Engine.set_pitch_scale(1 + (randf() * 0.05))
+	$Engine.playing = true
+	
+	connect("body_entered", self, "_body_entered")
+	
+func _process(delta):
+	pass
+#	if randi() % 10000 > 9990:		
+#		$Beep.set_pitch_scale(1 + (randf() * 0.1))
+#		$Beep.play()
 	
 func _physics_process(delta):
-	var is_on_floor = $RayCast.is_colliding()
-	apply_central_impulse(-transform.basis.z * delta * 6)
-#	if is_on_floor:
-#		print("on floor")
-#		#set_axis_lock(PhysicsServer.BODY_AXIS_LINEAR_Y, true)		
-		
-		
+	#var is_on_floor = $RayCast.is_colliding()	
+	#$ForwardCast.enabled = true
+	var obstacle = $ForwardCast.get_collider()
+	#print("check")
+	#$ForwardCast.enabled = false
+	if not obstacle or obstacle is StaticBody:
+		apply_central_impulse(-transform.basis.z * delta * 6)
+	else:		
+		if randi() % 10 > 8:
+			if not $Beep.is_playing():
+				$Beep.play()
+
+
+func _body_entered(body):
+	if body is KinematicBody or body is RigidBody:
+		if body is RigidBody:
+			if not body.get_meta("type") == "vehicle":
+				return 
+		if not $Crash.is_playing():
+			$Crash.play()
+	pass
 
 func look_follow(state, current_transform, target_position):
-	if has_valid_path():			
+	if has_valid_path():
 			var position = global_transform.origin
 			var current_direction = -global_transform.basis.z
 			var required_direction = position.direction_to(target_position)
@@ -60,9 +90,9 @@ func look_follow(state, current_transform, target_position):
 			var d = current_direction.dot(required_direction)
 			if d < 0.99:
 				if cross.y < 0:
-					state.set_angular_velocity(-Vector3.UP * (0.02 / state.get_step()))
+					state.set_angular_velocity(-Vector3.UP * (0.08 / state.get_step()))
 				else:
-					state.set_angular_velocity(Vector3.UP * (0.02 / state.get_step()))
+					state.set_angular_velocity(Vector3.UP * (0.08 / state.get_step()))
 
 func _integrate_forces(state):	
 	if has_valid_path():

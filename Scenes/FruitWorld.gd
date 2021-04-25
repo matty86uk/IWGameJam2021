@@ -13,6 +13,27 @@ var player
 var navigation_points = {}
 var navigation_astar = {}
 
+#var building_sizes = {
+#		"1":[7,7],
+#		"2":[7,6],
+#		"3":[7,5],
+#		"4":[7,4],
+#		"5":[6,6],
+#		"6":[6,5],
+#		"7":[6,4],
+#		"8":[5,5],
+#		"9":[5,4],
+#		"10":[5,3],
+#		"11":[4,3],
+#		"12":[3,3]
+#	}
+
+var building_sizes = {
+	"1":[3,3],
+#	"2":[4,4],
+#	"3":[3,3]
+	}
+
 var grass_colors = [
 	Color8(138, 184, 99),
 	Color8(179, 212, 142),
@@ -60,7 +81,8 @@ func generate_world(world_seed : int):
 	var middle_of_building = assign_buildings_and_calculate_middle(map_dictionary, building_points)
 	
 	##Expand Buildings
-	var buildings = expand_buildings(map_dictionary, middle_of_building)
+	var buildings = expand_buildings_v2(map_dictionary, middle_of_building)
+	#expand_buildings_v2(map_dictionary, middle_of_building)
 	
 	#Navigation
 	var vehicle_astar = generate_astar_vehicle(map_dictionary)	
@@ -87,7 +109,7 @@ func generate_world(world_seed : int):
 	create_road_and_pavement_mesh(map_dictionary, world_size["min_x"], world_size["max_x"], world_size["min_z"], world_size["max_z"])
 	
 	#buildings
-	#create_building_mesh(buildings)
+	create_building_mesh(buildings)
 	
 func create_entity_types(type, sub_types, packed_scenes):
 	entities.add_entity_type(type, sub_types, packed_scenes)
@@ -105,7 +127,11 @@ func spawn_player(fruit_data, scene_dictionary, drink_order):
 	player.transform.origin = Vector3(max_x - 20, 0, max_z - 20)
 	player.init($Root, $Root/Rope, projectile_scene, $Camera, fruit_data, scene_dictionary, drink_order)
 	$Root.add_child(player)
-
+	entities.start_entity_loop()
+	
+func show_player_ui():
+	player.show_player_ui()
+	
 func move_camera(position):
 	$Camera.global_transform = player.get_node(str("Camera", position)).global_transform	
 	current_camera_pos =  player.get_node(str("Camera", position))
@@ -122,7 +148,7 @@ func _ready():
 # -----------------------
 
 func expand_and_assign_roads(map_dictionary, points):
-	for p in points: 
+	for p in points:
 		var p1 = p*3+(Vector3(-1,0,1))
 		var p2 = p*3+(Vector3(0,0,1))
 		var p3 = p*3+(Vector3(1,0,1))
@@ -153,7 +179,131 @@ func assign_buildings_and_calculate_middle(map_dictionary, points):
 		map_dictionary[p] = "BUILDING"
 		total_building_points += p
 	return total_building_points/points.size()
+
+func expand_buildings_v2(map_dictionary, avg_building_point):
+
+	var buildings = {}
+	var used_building_points = {}
+	var max_distance = 0 
+	var min_distance = 1000
+	for p in map_dictionary.keys():
+		if map_dictionary.get(p) == "BUILDING":
+			var distance = p.distance_squared_to(avg_building_point)
+			if distance > max_distance:
+				max_distance = distance
+			if distance < min_distance:
+				min_distance = distance
 	
+	for p in map_dictionary.keys():
+		# and not used_building_points.has(p):
+		if map_dictionary.get(p) == "BUILDING" and not used_building_points.has(p):
+			var distance = p.distance_squared_to(avg_building_point)
+			var normalised_height = remap_range(distance, min_distance, max_distance, 1, 10)
+			var chance_removal = 0
+			var building_height_factor = 1
+			if normalised_height >= 5:
+				building_height_factor = 2 + randi() % 2
+				chance_removal = 0.35
+			elif normalised_height >= 3 and normalised_height <5:
+				building_height_factor = 5  + randi() % 3
+				chance_removal = 0.25
+			elif normalised_height >= 2.5 and normalised_height < 3:
+				building_height_factor = 8 + randi() % 3
+				chance_removal = 0.15
+			elif normalised_height < 2.5:
+				chance_removal = 0.05
+				building_height_factor = 12 + randi() % 3
+			
+			var building_height = building_height_factor 
+
+#			var min_building_size = int(floor(remap_range(distance, min_distance, max_distance, 1, 7)))
+#		
+#			var random_building_size_index = (randi() % min_building_size) + 5
+#			if random_building_size_index > building_sizes.size():
+#				random_building_size_index = building_sizes.size()
+#			var random_building_size = building_sizes.get(str(random_building_size_index))
+			var random_building_size_index = (randi() % building_sizes.size())
+			var random_building_size = building_sizes.get(str(random_building_size_index + 1))
+			
+			var x_size = random_building_size[0]
+			var z_size = random_building_size[1]
+			
+			var full_buildings = []
+			var local_building_points_1 = []
+			var local_building_points_2 = []
+			var local_building_points_3 = []
+			var local_building_points_4 = []
+			var full_building = true
+			
+			for x in range(x_size):
+				for z in range(z_size):
+					var point = p + (x * Vector3.LEFT) + (z * Vector3.FORWARD)					
+					if not map_dictionary.get(point) == "ROAD" and not map_dictionary.get(point) == "PAVEMENT" and not used_building_points.has(point):
+						local_building_points_1.push_back(point)
+					else:
+						full_building = false
+			if full_building and not local_building_points_1.empty():
+				full_buildings.push_back(1)
+			
+			full_building = true
+			for x in range(x_size):
+				for z in range(z_size):
+					var point = p + (x * Vector3.LEFT) + (z * Vector3.BACK)					
+					if not map_dictionary.get(point) == "ROAD" and not map_dictionary.get(point) == "PAVEMENT" and not used_building_points.has(point):
+						local_building_points_2.push_back(point)
+					else:
+						full_building = false
+			if full_building and not local_building_points_2.empty():
+				full_buildings.push_back(2)
+			
+			full_building = true
+			for x in range(x_size):
+				for z in range(z_size):
+					var point = p + (x * Vector3.RIGHT) + (z * Vector3.FORWARD)					
+					if not map_dictionary.get(point) == "ROAD" and not map_dictionary.get(point) == "PAVEMENT" and not used_building_points.has(point):
+						local_building_points_3.push_back(point)
+					else:		
+						full_building = false
+			if full_building and not local_building_points_3.empty():
+				full_buildings.push_back(3)
+						
+			full_building = true
+			for x in range(x_size):
+				for z in range(z_size):
+					var point = p + (x * Vector3.RIGHT) + (z * Vector3.BACK)
+					if not map_dictionary.get(point) == "ROAD" and not map_dictionary.get(point) == "PAVEMENT" and not used_building_points.has(point):
+						local_building_points_4.push_back(point)
+					else:
+						full_building = false
+			if full_building and not local_building_points_4.empty():
+				full_buildings.push_back(4)
+			
+
+			if not full_buildings.empty():
+				var local_building_points = []
+				var chosen_building_points = full_buildings[randi() % full_buildings.size()]
+				if chosen_building_points == 1:
+					local_building_points = local_building_points_1
+				elif chosen_building_points == 2:
+					local_building_points = local_building_points_2
+				elif chosen_building_points == 3:
+					local_building_points = local_building_points_3
+				elif chosen_building_points == 4:
+					local_building_points = local_building_points_4
+				
+				for point in local_building_points:
+					used_building_points[point] = "USED"
+				var building = {}
+				if randf() < (0.9 - chance_removal):
+					building["points"] = local_building_points
+					building["height"] = building_height
+					buildings[buildings.size()] = building
+	
+	return buildings
+	
+func remap_range(value, InputA, InputB, OutputA, OutputB):
+	return(value - InputA) / (InputB - InputA) * (OutputB - OutputA) + OutputA
+
 func expand_buildings(map_dictionary, avg_building_point):
 	var buildings = {}
 	var used_building_points = {}
@@ -616,10 +766,10 @@ func find_world_size(map_dictionary):
 		if (p.z < min_z):
 			min_z = p.z
 #
-	min_x -= 100
-	max_x += 100
-	min_z -= 100
-	max_z += 100
+	min_x -= 20
+	max_x += 20
+	min_z -= 20
+	max_z += 20
 	
 	var dictionary = {}
 	dictionary["min_x"] = min_x
@@ -642,14 +792,18 @@ func create_floor_mesh(map_dictionary, min_x, max_x, min_z, max_z):
 	
 	for z in range(min_z, max_z + 1):
 		for x in range(min_x, max_x + 1):
-			vertices_terrain.push_back(Vector3(x, 0, z))
-			normals_terrain.push_back(Vector3.UP)
+			var random_y = randf()  * 0.1
+			
 			var y = 0
 			var type = map_dictionary.get(Vector3(x, 0, z))
 			if type == "PAVEMENT":
 				y = 0.1
+				random_y = 0
 			elif type == "ROAD":
 				y = 0.05
+				random_y = 0
+			vertices_terrain.push_back(Vector3(x, random_y , z))
+			normals_terrain.push_back(Vector3.UP * random_y * 10)
 			verticies_terrain_collision.push_back(Vector3(x, y, z))
 			
 			if x_pos < x_size and z_pos < z_size:
@@ -684,7 +838,7 @@ func create_floor_mesh(map_dictionary, min_x, max_x, min_z, max_z):
 	var m = MeshInstance.new()
 	var mat = SpatialMaterial.new()
 	mat.vertex_color_is_srgb = true
-	mat.albedo_color = Color.green
+	mat.albedo_color = Color.green.darkened(0.2) #* (randf() * 0.01)
 	mat.vertex_color_use_as_albedo = true
 	mat.flags_use_point_size = true
 	mat.params_point_size = 5
@@ -757,9 +911,9 @@ func create_road_and_pavement_mesh(map_dictionary, min_x, max_x, min_z, max_z):
 	$Root.add_child(mmi_roads)
 	$Root.add_child(mmi_pavement)
 	
-func create_building_mesh(buildings):
+func create_building_mesh(buildings_dictionary):
 	var building_mesh = CubeMesh.new()
-	building_mesh.size = Vector3(1,4,1)
+	building_mesh.size = Vector3(1,1,1)
 #
 	var building_mat = SpatialMaterial.new()
 	building_mat.vertex_color_use_as_albedo = true
@@ -776,17 +930,77 @@ func create_building_mesh(buildings):
 	mmi_buiding.multimesh = mm_buiding
 #
 	var building_instance_count = 0
-	for b in buildings:
-		var building_block_points = buildings.get(b)
+	
+	
+	var collision_root = StaticBody.new()
+	collision_root.name = "building_collision_root"
+	$Root.add_child(collision_root)
+	
+	for building in buildings_dictionary:
+		
+		var building_points = buildings_dictionary.get(building)["points"]
+		var building_height = buildings_dictionary.get(building)["height"]
 		var random_building_color = Color(randf(), randf(), randf())
-		var random_height =1 + randi() % 3 
-		for building_block_point in building_block_points:
-			mm_buiding.set_instance_transform(building_instance_count, Transform(Basis(), building_block_point).scaled(Vector3(1, random_height, 1)))
-			mm_buiding.set_instance_color(building_instance_count, random_building_color)
-			building_instance_count += 1
+		
+		
+		
+		if building_points.size() > 0:
+			var lowest = lowest_vector(building_points)
+			var highest = highest_vector(building_points)
+			var centre_point = centre_vector(building_points)
+			var x_size = highest.x - lowest.x
+			var z_size = highest.z - lowest.z
+			var shape = BoxShape.new()
+			shape.extents = Vector3((x_size/2)+0.5, 1, (z_size/2)+0.5)
+			var col_shape = CollisionShape.new()
+			col_shape.transform = Transform(Basis(), centre_point)
+			col_shape.shape =  shape
+			collision_root.add_child(col_shape)
+			
+		
+			for building_point in building_points:
+				var t = Transform(Basis(), building_point).scaled(Vector3(1, building_height, 1))
+				mm_buiding.set_instance_transform(building_instance_count, t)
+				mm_buiding.set_instance_color(building_instance_count, random_building_color)
+				building_instance_count += 1
+	##			var collision_shape = CollisionShape.new()
+	##			collision_shape.transform = t
+	##			var shape = BoxShape.new()
+	##			shape.extents = Vector3(1, building_height, 1)
+	##			collision_shape.shape = shape
+	##			collision_root.add_child(collision_shape)
+
+
+		
+		
+		
+		
 	mm_buiding.visible_instance_count = building_instance_count
 	$Root.add_child(mmi_buiding)
-	
+
+func lowest_vector(vectors):
+	var lowest = vectors[0]
+	for v in vectors:
+		if v < lowest:
+			lowest = v
+	return lowest
+
+func highest_vector(vectors):
+	var highest = vectors[0]
+	for v in vectors:
+		if v > highest:
+			highest = v
+	return highest
+
+func centre_vector(vectors):
+	var total
+	for v in vectors:
+		if not total:
+			total = v
+		else:
+			total += v
+	return (total/vectors.size()).round()
+
 func create_player(max_x, max_z):
 	player = player_scene.instance()
 	player.transform.origin = Vector3(max_x - 20, 0, max_z - 20)

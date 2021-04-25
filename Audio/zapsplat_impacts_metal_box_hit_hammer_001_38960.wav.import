@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/zapsplat_impacts_metal_box_hit_hammer_001_38960.wav-6c0026bcdc33f509f7d1b00425ccd983.sample"
+
+[deps]
+
+source_file="res://Audio/zapsplat_impacts_metal_box_hit_hammer_001_38960.wav"
+dest_files=[ "res://.import/zapsplat_impacts_metal_box_hit_hammer_001_38960.wav-6c0026bcdc33f509f7d1b00425ccd983.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0
