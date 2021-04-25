@@ -38,6 +38,15 @@ var collected_fruits = []
 var brake_light_off_material = load("res://Entities/Vehicles/material/brake_lights_unlit.material")
 var brake_light_on_material = load("res://Entities/Vehicles/material/brake_lights_lit.material")
 
+var style_box_ok = load("res://Entities/ok.stylebox")
+var style_box_error = load("res://Entities/error.stylebox")
+
+var objectives = {}
+
+var playing = true
+var starting_color = Color.white
+var target_color = Color.transparent
+
 func _ready():
 	weapon = weapon_ballista_scene.instance()
 	weapon_point.add_child(weapon)
@@ -59,13 +68,30 @@ func init(projectile_root : Spatial, projectile_rope : MeshInstance, projectile_
 	self.drink_order = drink_order
 	print(drink_order)
 	
+	var objective_labels = $Objectives/ObjectivesList.get_children()
+	
 	for drink in drink_order:
 		var drink_name = fruit_data[drink]["name"]
+		var next_label = objective_labels.pop_front()
+		next_label.text = drink_name
+		#next_label.add_stylebox_override("error", style_box_error)
+		next_label.set('custom_styles/normal', style_box_error)
+		next_label.show()
+		
+		if not objectives.has(drink_name):
+			var label_array = []
+			label_array.push_back(next_label)
+			objectives[drink_name] = label_array
+		else:
+			var existing_labels = objectives.get(drink_name)
+			existing_labels.push_back(next_label)
+			
 		if not required_fruits.has(drink_name):
 			required_fruits[drink_name] = 1
 		else:
 			required_fruits[drink_name] = required_fruits[drink_name] + 1
 	print(required_fruits)
+	$ObjectivesTitle/ObjectiveFruit.show()
 	
 func show_player_ui():
 	player_ui.show()
@@ -90,10 +116,12 @@ func get_input():
 	acceleration = Vector3.ZERO
 	if Input.is_action_pressed("accelerate"):
 		acceleration = -transform.basis.z * engine_power		
-		emit_signal("forward_camera")		
+		emit_signal("forward_camera")
+		playing = true
 	if Input.is_action_pressed("brake"):	
 		acceleration = -transform.basis.z * braking
 		brake_lights(true)
+		playing = true
 	
 	if Input.is_action_just_released("brake"):
 		brake_lights(false)
@@ -102,11 +130,6 @@ func get_input():
 	var velocity_length = velocity.length()
 	$Engine.set_unit_db(velocity_length)
 	$Engine.set_pitch_scale( 1 + (velocity_length/3))
-	
-#	if abs(turn) >= 1:
-#		if velocity_length > 2.5:
-#			if not $Tyre.is_playing():
-#				$Tyre.play()
 	
 func _input(event):
 	if event.is_action_pressed("fire"):
@@ -146,7 +169,7 @@ func _physics_process(delta):
 				projectile.init(self, weapon_projectile_start)
 				add_collision_exception_with(projectile)
 				projectile.global_transform = weapon_projectile_start.global_transform
-				projectile_root.add_child(projectile)		
+				projectile_root.add_child(projectile)
 				projectile.look_at(intersection.position, Vector3.UP)
 		else:
 			released = false
@@ -173,13 +196,38 @@ func _on_reloaded():
 			var fruit = caught_object.get_meta("subtype")
 			if required_fruits.has(fruit):
 				if required_fruits.get(fruit) > 0:
+					$Correct.play()
 					caught_object.global_transform.origin = $DropPoint.global_transform.origin
 					required_fruits[fruit] = required_fruits[fruit] - 1
+					var objective_labels = objectives[fruit]
+					if objective_labels.size() > 0:
+						print("updating labels")
+						var label = objective_labels.pop_front()
+						label.set('custom_styles/normal', style_box_ok)
+					check_complete()
+			else:
+				$Incorrect.play()
 		caught_object.linear_velocity = Vector3.ZERO
 	caught_object = null
 
+func check_complete():
+	var fruit_count  = 0
+	for fruit in required_fruits:
+		fruit_count += required_fruits[fruit]
+	if fruit_count == 0:
+		$ObjectivesTitle/ObjectivePortal.show()
+		$ObjectivesTitle/ObjectivePortal.modulate = starting_color
+		return true
+	else:
+		print("not complete")
+		return false
+
 func _process(delta):
-	
+	if playing:
+		if not $ObjectivesTitle/ObjectiveFruit.modulate.is_equal_approx(target_color):
+			$ObjectivesTitle/ObjectiveFruit.modulate = $ObjectivesTitle/ObjectiveFruit.modulate.linear_interpolate(target_color, delta)
+		if not $ObjectivesTitle/ObjectivePortal.modulate.is_equal_approx(target_color):
+			$ObjectivesTitle/ObjectivePortal.modulate = $ObjectivesTitle/ObjectivePortal.modulate.linear_interpolate(target_color, delta)
 	if caught_object:
 		pass
 	$VanCamViewPort/VanCam.global_transform = $VanCameraPoint.global_transform

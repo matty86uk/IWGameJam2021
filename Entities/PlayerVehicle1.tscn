@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=2]
+[gd_scene load_steps=29 format=2]
 
 [ext_resource path="res://Entities/PlayerVehicle1.gd" type="Script" id=1]
 [ext_resource path="res://Entities/Vehicles/gltf/lightFront.material" type="Material" id=2]
@@ -13,6 +13,8 @@
 [ext_resource path="res://Audio/Blastwave_FX_TruckTiresScreech_BW.62488.wav" type="AudioStream" id=11]
 [ext_resource path="res://Audio/zapsplat_impacts_car_crash_smash_head_on_23549.wav" type="AudioStream" id=12]
 [ext_resource path="res://Audio/truck_reverse_beep_warning_01.wav" type="AudioStream" id=13]
+[ext_resource path="res://Audio/confirmation_002.ogg" type="AudioStream" id=14]
+[ext_resource path="res://Audio/error_002.ogg" type="AudioStream" id=15]
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "body"
@@ -185,6 +187,24 @@ extents = Vector3( 0.05, 0.35, 0.4 )
 [sub_resource type="BoxShape" id=9]
 extents = Vector3( 0.25, 0.05, 0.4 )
 
+[sub_resource type="DynamicFontData" id=10]
+font_path = "res://Fonts/Tribe-regular.otf"
+
+[sub_resource type="DynamicFont" id=11]
+size = 28
+outline_size = 3
+outline_color = Color( 0, 0, 0, 1 )
+font_data = SubResource( 10 )
+
+[sub_resource type="DynamicFontData" id=12]
+font_path = "res://Fonts/Palette-regular.otf"
+
+[sub_resource type="DynamicFont" id=13]
+size = 72
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+font_data = SubResource( 12 )
+
 [node name="BaseVehicle" type="KinematicBody"]
 script = ExtResource( 1 )
 
@@ -258,6 +278,7 @@ far = 8192.0
 transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.9, -0.2 )
 
 [node name="Label" type="Label" parent="."]
+visible = false
 margin_left = 7.0
 margin_top = 5.0
 margin_right = 47.0
@@ -267,6 +288,7 @@ __meta__ = {
 }
 
 [node name="Label2" type="Label" parent="."]
+visible = false
 margin_left = 7.0
 margin_top = 29.0
 margin_right = 47.0
@@ -276,6 +298,7 @@ __meta__ = {
 }
 
 [node name="Label3" type="Label" parent="."]
+visible = false
 margin_left = 6.0
 margin_top = 52.0
 margin_right = 46.0
@@ -348,3 +371,140 @@ stream = ExtResource( 12 )
 
 [node name="Reverse" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource( 13 )
+
+[node name="Objectives" type="Control" parent="."]
+anchor_top = 0.5
+anchor_bottom = 0.5
+margin_top = -184.5
+margin_right = 322.0
+margin_bottom = 184.5
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ObjectivesList" type="VBoxContainer" parent="Objectives"]
+margin_left = 2.37842
+margin_top = 117.732
+margin_right = 304.378
+margin_bottom = 458.732
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label1" type="Label" parent="Objectives/ObjectivesList"]
+visible = false
+margin_right = 200.0
+margin_bottom = 44.0
+rect_min_size = Vector2( 100, 44 )
+custom_fonts/font = SubResource( 11 )
+text = "Banana"
+align = 1
+
+[node name="Label2" type="Label" parent="Objectives/ObjectivesList"]
+visible = false
+margin_top = 48.0
+margin_right = 200.0
+margin_bottom = 92.0
+rect_min_size = Vector2( 100, 44 )
+custom_fonts/font = SubResource( 11 )
+text = "Banana"
+align = 1
+
+[node name="Label3" type="Label" parent="Objectives/ObjectivesList"]
+visible = false
+margin_top = 96.0
+margin_right = 200.0
+margin_bottom = 140.0
+rect_min_size = Vector2( 100, 44 )
+custom_fonts/font = SubResource( 11 )
+text = "Banana"
+align = 1
+
+[node name="Label4" type="Label" parent="Objectives/ObjectivesList"]
+visible = false
+margin_top = 144.0
+margin_right = 200.0
+margin_bottom = 188.0
+rect_min_size = Vector2( 100, 44 )
+custom_fonts/font = SubResource( 11 )
+text = "Banana"
+align = 1
+
+[node name="Label5" type="Label" parent="Objectives/ObjectivesList"]
+visible = false
+margin_top = 192.0
+margin_right = 200.0
+margin_bottom = 236.0
+rect_min_size = Vector2( 100, 44 )
+custom_fonts/font = SubResource( 11 )
+text = "Banana"
+align = 1
+
+[node name="Label6" type="Label" parent="Objectives/ObjectivesList"]
+visible = false
+margin_top = 240.0
+margin_right = 200.0
+margin_bottom = 284.0
+rect_min_size = Vector2( 100, 44 )
+custom_fonts/font = SubResource( 11 )
+text = "Banana"
+align = 1
+
+[node name="Correct" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 14 )
+volume_db = 5.0
+
+[node name="Incorrect" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 15 )
+volume_db = 5.0
+
+[node name="ObjectivesTitle" type="Control" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -20.0
+margin_top = -20.0
+margin_right = 20.0
+margin_bottom = 20.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ObjectiveFruit" type="Label" parent="ObjectivesTitle"]
+visible = false
+use_parent_material = true
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -297.5
+margin_top = -37.5
+margin_right = 297.5
+margin_bottom = 37.5
+custom_fonts/font = SubResource( 13 )
+custom_colors/font_color = Color( 0, 0.698039, 0.545098, 1 )
+custom_colors/font_color_shadow = Color( 1, 1, 1, 1 )
+text = "get the ingrediants!"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ObjectivePortal" type="Label" parent="ObjectivesTitle"]
+visible = false
+use_parent_material = true
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -279.0
+margin_top = -37.5
+margin_right = 279.0
+margin_bottom = 37.5
+custom_fonts/font = SubResource( 13 )
+custom_colors/font_color = Color( 0.643137, 0.764706, 0.054902, 1 )
+custom_colors/font_color_shadow = Color( 1, 1, 1, 1 )
+text = "get to the portal!"
+__meta__ = {
+"_edit_use_anchors_": false
+}

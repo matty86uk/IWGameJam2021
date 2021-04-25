@@ -1,12 +1,7 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Scenes/Root.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/FruitWorld.gd" type="Script" id=2]
-
-[sub_resource type="Environment" id=4]
-background_mode = 1
-background_color = Color( 1, 1, 1, 1 )
-ambient_light_color = Color( 1, 1, 1, 1 )
 
 [sub_resource type="CubeMesh" id=2]
 
@@ -19,7 +14,6 @@ script = ExtResource( 2 )
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 10, -50 )
-environment = SubResource( 4 )
 current = true
 near = 0.01
 far = 8192.0
