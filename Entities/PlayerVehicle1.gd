@@ -35,6 +35,9 @@ var drink_order
 var required_fruits = {}
 var collected_fruits = []
 
+var brake_light_off_material = load("res://Entities/Vehicles/material/brake_lights_unlit.material")
+var brake_light_on_material = load("res://Entities/Vehicles/material/brake_lights_lit.material")
+
 func _ready():
 	weapon = weapon_ballista_scene.instance()
 	weapon_point.add_child(weapon)
@@ -69,8 +72,13 @@ func show_player_ui():
 	
 func hide_player_ui():
 	pass
-	
-	
+
+func brake_lights(value):
+	if value:
+		$body.set_surface_material(0, brake_light_off_material)
+	else:
+		$body.set_surface_material(0, brake_light_on_material)
+		
 func get_input():
 	if not $Engine.is_playing():
 			$Engine.playing = true
@@ -82,9 +90,15 @@ func get_input():
 	acceleration = Vector3.ZERO
 	if Input.is_action_pressed("accelerate"):
 		acceleration = -transform.basis.z * engine_power		
+		emit_signal("forward_camera")		
 	if Input.is_action_pressed("brake"):	
 		acceleration = -transform.basis.z * braking
+		brake_lights(true)
 	
+	if Input.is_action_just_released("brake"):
+		brake_lights(false)
+		
+		
 	var velocity_length = velocity.length()
 	$Engine.set_unit_db(velocity_length)
 	$Engine.set_pitch_scale( 1 + (velocity_length/3))

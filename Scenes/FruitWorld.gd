@@ -126,8 +126,16 @@ func spawn_player(fruit_data, scene_dictionary, drink_order):
 	player = player_scene.instance()
 	player.transform.origin = Vector3(max_x - 20, 0, max_z - 20)
 	player.init($Root, $Root/Rope, projectile_scene, $Camera, fruit_data, scene_dictionary, drink_order)
+	player.connect("forward_camera", self, "_forward_camera")
+	player.connect("reverse_camera", self, "_reverse_camera")
 	$Root.add_child(player)
 	entities.start_entity_loop()
+	
+func _forward_camera():
+	transition_camera("Final")
+
+func _reverse_camera():
+	transition_camera("FinalReverse")
 	
 func show_player_ui():
 	player.show_player_ui()

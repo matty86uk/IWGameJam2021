@@ -60,8 +60,12 @@ func calculate_steering(delta):
 	var d = new_heading.dot(velocity.normalized())
 	if d > 0:
 		velocity = new_heading * velocity.length()
-	if d < 0:
+		$Reverse.stop()
+	if d < 0:		
 		velocity = -new_heading * min(velocity.length(), max_speed_reverse)
+		emit_signal("reverse_camera")
+		if not $Reverse.is_playing():
+			$Reverse.play()
 	look_at(transform.origin + new_heading, transform.basis.y)
 
 func get_input():

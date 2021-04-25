@@ -36,6 +36,26 @@ var forward_cast_check_time = 0
 var forward_cast_check_time_max = 2000
 var last_check_obstacle = false
 
+var brake_light_off_material = load("res://Entities/Vehicles/material/brake_lights_unlit.material")
+var brake_light_on_material = load("res://Entities/Vehicles/material/brake_lights_lit.material")
+
+var brake_lights_dictionary = {
+	"deliveryTruck": 0,
+	"deliveryTruckFlat": 3,
+	"garbageTruck": 6,
+	"hatchbackSport": 5,
+	"sedan" : 5,
+	"sedanSport" : 4,
+	"suv" : 4,
+	"suvLuxury" : 3,
+	"taxi" : 5,
+	"truck" : 5,
+	"truckFlat" : 2,
+	"van" : 4,
+}
+
+		
+
 func _ready():
 	mat_debug.vertex_color_use_as_albedo  = true
 	mat_debug.flags_unshaded = true
@@ -66,11 +86,21 @@ func _physics_process(delta):
 	#$ForwardCast.enabled = false
 	if not obstacle or obstacle is StaticBody:
 		apply_central_impulse(-transform.basis.z * delta * 6)
-	else:		
+		brake_lights(false)
+	else:
+		brake_lights(true)
 		if randi() % 10 > 8:
 			if not $Beep.is_playing():
 				$Beep.play()
 
+
+func brake_lights(value):
+	var subtype = get_meta("subtype")
+	var material_no = brake_lights_dictionary.get(subtype)		
+	if value:		
+		get_node("tmpParent").get_child(0).get_node("body").set_surface_material(material_no, brake_light_off_material)
+	else:
+		get_node("tmpParent").get_child(0).get_node("body").set_surface_material(material_no, brake_light_on_material)
 
 func _body_entered(body):
 	if body is KinematicBody or body is RigidBody:
