@@ -19,6 +19,9 @@ func _ready():
 	var pedestrian_dictionary = load_pedestrian_scenes()
 	game.add_scene_dictionary(pedestrian_dictionary, "pedestrian", load_json_file("res://Data/pedestrians.tres"))
 	
+	var police_dictionary = load_police_scenes()
+	game.add_scene_dictionary(police_dictionary, "police", load_json_file("res://Data/police.tres"))
+	
 	add_child(game)
 
 func load_vehicle_scenes():
@@ -26,6 +29,11 @@ func load_vehicle_scenes():
 
 func load_pedestrian_scenes():
 	return load_directory("res://Entities/Pedestrians", ".tscn")
+
+func load_police_scenes():
+	var dictionary = {}
+	dictionary["police.tscn"] = load("res://Entities/Vehicles/police.tscn")
+	return dictionary
 
 func load_directory(path, extension):
 	var dictionary = {}

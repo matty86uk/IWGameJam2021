@@ -1,16 +1,16 @@
 extends Spatial
 
+var material = SpatialMaterial.new()
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
-
-
-# Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	material.flags_transparent = true
+	material.flags_unshaded = true
+	material.params_billboard_mode = SpatialMaterial.BILLBOARD_ENABLED
+	$MeshInstance2.material_override = material
 
+func play_noise():
+	$SpawnNoise.play()
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	pass
+	material.albedo_texture = $Viewport.get_texture()	
+	$MeshInstance/MeshInstance.rotate_y(delta)

@@ -31,15 +31,14 @@ func _physics_process(delta):
 #	var collider = collision["collider"]
 #	if collider is KinematicBody:
 #		collider.collide(transform.basis.z * (velocity * 0.2), collision["position"])
-#	var collision = move_and_collide(velocity, false, true, true)
-#	if collision.collider:
-#		if collision.collider is StaticBody:
-#			var parent =  collision.collider.get_parent()
-#			if parent.name == "floor_collision":
-#				#print("Skipping collision sound")
-#				pass
-#			else:
-#				$Crash.play()
+	var collision = move_and_collide(velocity, false, true, true)
+	if collision.collider:
+		if collision.collider is KinematicBody:
+			var kbody = collision.collider
+			if kbody.get_meta("type") == "police":
+				kbody.alert()
+				emit_signal("police_alerted")
+
 	velocity = move_and_slide_with_snap(velocity, -transform.basis.y, Vector3.UP, true) 
 
 func apply_friction(delta):

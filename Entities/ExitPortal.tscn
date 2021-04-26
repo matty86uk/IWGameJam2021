@@ -1,13 +1,40 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://Entities/ExitPortal.gd" type="Script" id=1]
+[ext_resource path="res://Audio/light_in_dark_spell_01.wav" type="AudioStream" id=3]
 
 [sub_resource type="SphereMesh" id=1]
+is_hemisphere = true
 
 [sub_resource type="SpatialMaterial" id=2]
 flags_transparent = true
 flags_unshaded = true
-albedo_color = Color( 0.360784, 0.0941176, 0.458824, 0.811765 )
+albedo_color = Color( 0.360784, 0.0941176, 0.458824, 1 )
+
+[sub_resource type="CubeMesh" id=8]
+size = Vector3( 1.4, 1.2, 1.4 )
+
+[sub_resource type="SpatialMaterial" id=9]
+params_grow = true
+params_grow_amount = 0.019
+albedo_color = Color( 0.341176, 0, 0.415686, 1 )
+
+[sub_resource type="QuadMesh" id=3]
+size = Vector2( 6, 1 )
+
+[sub_resource type="StyleBoxFlat" id=7]
+bg_color = Color( 0.6, 0.6, 0.6, 0 )
+
+[sub_resource type="DynamicFontData" id=5]
+font_path = "res://Fonts/Palette-regular.otf"
+
+[sub_resource type="DynamicFont" id=6]
+size = 200
+outline_size = 5
+outline_color = Color( 0, 0, 0, 1 )
+use_mipmaps = true
+use_filter = true
+font_data = SubResource( 5 )
 
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 1 )
@@ -16,5 +43,60 @@ script = ExtResource( 1 )
 mesh = SubResource( 1 )
 material/0 = SubResource( 2 )
 
+[node name="MeshInstance" type="MeshInstance" parent="MeshInstance"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.641958, 0 )
+mesh = SubResource( 8 )
+material/0 = SubResource( 9 )
+
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.9487 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.27962, 3.9487 )
+
+[node name="MeshInstance2" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0 )
+mesh = SubResource( 3 )
+material/0 = null
+
+[node name="Viewport" type="Viewport" parent="."]
+size = Vector2( 800, 200 )
+transparent_bg = true
+fxaa = true
+disable_3d = true
+usage = 0
+render_target_v_flip = true
+
+[node name="Control" type="Control" parent="Viewport"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -500.0
+margin_top = -270.0
+margin_right = 300.0
+margin_bottom = 130.0
+rect_min_size = Vector2( 800, 400 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="Viewport/Control"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -165.5
+margin_top = -63.5
+margin_right = 165.5
+margin_bottom = 63.5
+custom_styles/normal = SubResource( 7 )
+custom_fonts/font = SubResource( 6 )
+custom_colors/font_color = Color( 0.847059, 0, 1, 1 )
+text = "portal
+	"
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SpawnNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 3 )

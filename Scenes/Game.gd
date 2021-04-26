@@ -13,7 +13,7 @@ var shop_world
 
 var scene_dictionary = {}
 var game_data_dictionary = {}
-var game_data_total_entities = {"vehicle":200, "pedestrian":500}
+var game_data_total_entities = {"vehicle":200, "pedestrian":800, "police":10}
 
 func _ready():
 	main_menu_scene()

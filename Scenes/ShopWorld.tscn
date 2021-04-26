@@ -1,4 +1,4 @@
-[gd_scene load_steps=59 format=2]
+[gd_scene load_steps=61 format=2]
 
 [ext_resource path="res://Materials/wood.material" type="Material" id=1]
 [ext_resource path="res://Entities/ShopStuff/soda.tscn" type="PackedScene" id=2]
@@ -15,6 +15,7 @@
 [ext_resource path="res://Scenes/Terminal.gd" type="Script" id=13]
 [ext_resource path="res://Scenes/ComputerScreen.gd" type="Script" id=14]
 [ext_resource path="res://Entities/ShopStuff/texture/black-hole-png-224.png" type="Texture" id=15]
+[ext_resource path="res://Scenes/Sign1.gd" type="Script" id=16]
 
 [sub_resource type="PlaneMesh" id=1]
 size = Vector2( 100, 100 )
@@ -47,78 +48,92 @@ size = Vector3( 2, 0.25, 8 )
 [sub_resource type="SpatialMaterial" id=10]
 albedo_color = Color( 1, 0, 0, 1 )
 
-[sub_resource type="CubeMesh" id=11]
-size = Vector3( 12, 0.25, 8 )
+[sub_resource type="QuadMesh" id=11]
+size = Vector2( 0.8, 1 )
 
-[sub_resource type="SpatialMaterial" id=12]
-vertex_color_use_as_albedo = true
-albedo_color = Color( 0.180392, 0.180392, 0.180392, 1 )
+[sub_resource type="DynamicFontData" id=12]
+font_path = "res://Fonts/Radical-regular.otf"
 
-[sub_resource type="CubeMesh" id=13]
-size = Vector3( 0.01, 6, 8 )
+[sub_resource type="DynamicFont" id=13]
+size = 90
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+use_mipmaps = true
+use_filter = true
+font_data = SubResource( 12 )
 
 [sub_resource type="CubeMesh" id=14]
-size = Vector3( 0.25, 6, 5 )
+size = Vector3( 12, 0.25, 8 )
 
 [sub_resource type="SpatialMaterial" id=15]
 vertex_color_use_as_albedo = true
-albedo_color = Color( 0.192157, 0.192157, 0.192157, 1 )
+albedo_color = Color( 0.180392, 0.180392, 0.180392, 1 )
 
 [sub_resource type="CubeMesh" id=16]
+size = Vector3( 0.01, 6, 8 )
+
+[sub_resource type="CubeMesh" id=17]
+size = Vector3( 0.25, 6, 5 )
+
+[sub_resource type="SpatialMaterial" id=18]
+vertex_color_use_as_albedo = true
+albedo_color = Color( 0.192157, 0.192157, 0.192157, 1 )
+
+[sub_resource type="CubeMesh" id=19]
 size = Vector3( 2, 3, 4 )
 
-[sub_resource type="SpatialMaterial" id=17]
+[sub_resource type="SpatialMaterial" id=20]
 vertex_color_use_as_albedo = true
 albedo_color = Color( 0.403922, 0.294118, 0, 1 )
 
-[sub_resource type="CylinderMesh" id=18]
+[sub_resource type="CylinderMesh" id=21]
 top_radius = 0.1
 bottom_radius = 0.1
 height = 1.0
 
-[sub_resource type="SpatialMaterial" id=19]
+[sub_resource type="SpatialMaterial" id=22]
 vertex_color_use_as_albedo = true
 albedo_color = Color( 0, 0, 0, 1 )
 
-[sub_resource type="CubeMesh" id=20]
+[sub_resource type="CubeMesh" id=23]
 size = Vector3( 0.2, 3, 8 )
 
-[sub_resource type="OpenSimplexNoise" id=21]
+[sub_resource type="OpenSimplexNoise" id=24]
 
-[sub_resource type="NoiseTexture" id=22]
+[sub_resource type="NoiseTexture" id=25]
 seamless = true
 as_normalmap = true
 bump_strength = 32.0
-noise = SubResource( 21 )
+noise = SubResource( 24 )
 
-[sub_resource type="OpenSimplexNoise" id=23]
+[sub_resource type="OpenSimplexNoise" id=26]
 
-[sub_resource type="NoiseTexture" id=24]
-noise = SubResource( 23 )
+[sub_resource type="NoiseTexture" id=27]
+noise = SubResource( 26 )
 
-[sub_resource type="SpatialMaterial" id=25]
+[sub_resource type="SpatialMaterial" id=28]
 albedo_color = Color( 0.160784, 0.160784, 0.160784, 1 )
 metallic = 1.0
 metallic_specular = 1.0
-metallic_texture = SubResource( 22 )
+metallic_texture = SubResource( 25 )
 normal_enabled = true
 normal_scale = 1.0
-normal_texture = SubResource( 24 )
+normal_texture = SubResource( 27 )
 
-[sub_resource type="CubeMesh" id=26]
+[sub_resource type="CubeMesh" id=29]
 size = Vector3( 6, 3, 3 )
 
-[sub_resource type="SpatialMaterial" id=27]
+[sub_resource type="SpatialMaterial" id=30]
 albedo_color = Color( 0.345098, 0.345098, 0.345098, 1 )
 
-[sub_resource type="CubeMesh" id=28]
+[sub_resource type="CubeMesh" id=31]
 flip_faces = true
 size = Vector3( 0.8, 0.8, 6 )
 
-[sub_resource type="SpatialMaterial" id=29]
+[sub_resource type="SpatialMaterial" id=32]
 flags_unshaded = true
 
-[sub_resource type="SpatialMaterial" id=30]
+[sub_resource type="SpatialMaterial" id=33]
 flags_do_not_receive_shadows = true
 flags_ensure_correct_normals = true
 params_diffuse_mode = 4
@@ -126,58 +141,47 @@ albedo_texture = ExtResource( 15 )
 uv1_offset = Vector3( 0.25, 0.1, 0 )
 uv1_triplanar_sharpness = 0.0371627
 
-[sub_resource type="SphereMesh" id=31]
-material = SubResource( 30 )
+[sub_resource type="SphereMesh" id=34]
+material = SubResource( 33 )
 radius = 0.8
 height = 1.6
 radial_segments = 12
 
-[sub_resource type="ViewportTexture" id=32]
+[sub_resource type="ViewportTexture" id=35]
 viewport_path = NodePath("Ground/Building/MeshInstance2/Viewport")
 
-[sub_resource type="SpatialMaterial" id=33]
+[sub_resource type="SpatialMaterial" id=36]
 resource_local_to_scene = true
 flags_unshaded = true
 params_billboard_keep_scale = true
-albedo_texture = SubResource( 32 )
-
-[sub_resource type="QuadMesh" id=34]
-material = SubResource( 33 )
-size = Vector2( 5, 4 )
-
-[sub_resource type="DynamicFontData" id=35]
-font_path = "res://Fonts/Radical-regular.otf"
-
-[sub_resource type="DynamicFont" id=36]
-size = 100
-outline_size = 2
-outline_color = Color( 0, 0, 0, 1 )
-use_mipmaps = true
-use_filter = true
-font_data = SubResource( 35 )
+albedo_texture = SubResource( 35 )
 
 [sub_resource type="QuadMesh" id=37]
+material = SubResource( 36 )
+size = Vector2( 5, 4 )
+
+[sub_resource type="QuadMesh" id=38]
 size = Vector2( 0.38, 0.24 )
 
-[sub_resource type="DynamicFontData" id=38]
+[sub_resource type="DynamicFontData" id=39]
 font_path = "res://Fonts/Tribe-regular.otf"
 
-[sub_resource type="DynamicFont" id=39]
+[sub_resource type="DynamicFont" id=40]
 size = 32
-font_data = SubResource( 38 )
+font_data = SubResource( 39 )
 
-[sub_resource type="DynamicFontData" id=40]
+[sub_resource type="DynamicFontData" id=41]
 font_path = "res://Fonts/Tribe-regular.otf"
 
-[sub_resource type="DynamicFont" id=41]
+[sub_resource type="DynamicFont" id=42]
 size = 50
-font_data = SubResource( 40 )
+font_data = SubResource( 41 )
 
-[sub_resource type="PanoramaSky" id=42]
+[sub_resource type="PanoramaSky" id=43]
 
-[sub_resource type="Environment" id=43]
+[sub_resource type="Environment" id=44]
 background_mode = 1
-background_sky = SubResource( 42 )
+background_sky = SubResource( 43 )
 background_color = Color( 1, 1, 1, 1 )
 ambient_light_color = Color( 1, 1, 1, 1 )
 
@@ -225,25 +229,93 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0 )
 mesh = SubResource( 9 )
 material/0 = SubResource( 10 )
 
+[node name="Sign1" type="Spatial" parent="Ground/Building/Wall4"]
+transform = Transform( 0.518714, 0, 0.854948, 0, 1, 0, -0.854948, 0, 0.518714, 0.365226, 0.504048, -3.02401 )
+
+[node name="Sign1" type="MeshInstance" parent="Ground/Building/Wall4/Sign1"]
+transform = Transform( 1, -2.98023e-08, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, -1.26096, 0.0117846, -0.267651 )
+mesh = SubResource( 11 )
+material/0 = null
+script = ExtResource( 16 )
+
+[node name="Viewport" type="Viewport" parent="Ground/Building/Wall4/Sign1/Sign1"]
+size = Vector2( 600, 400 )
+render_target_v_flip = true
+
+[node name="ViewportContainer" type="ViewportContainer" parent="Ground/Building/Wall4/Sign1/Sign1/Viewport"]
+margin_right = 100.0
+margin_bottom = 100.0
+rect_min_size = Vector2( 100, 100 )
+rect_scale = Vector2( 0.961778, 1.08347 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="Ground/Building/Wall4/Sign1/Sign1/Viewport/ViewportContainer"]
+margin_right = 655.0
+margin_bottom = 36.0
+custom_fonts/font = SubResource( 13 )
+custom_colors/font_color = Color( 0.054902, 0, 1, 1 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "100% 
+Free 
+Range"
+align = 1
+valign = 1
+
+[node name="Sign2" type="Spatial" parent="Ground/Building/Wall4"]
+transform = Transform( -0.681206, 0, 0.732091, 0, 1, 0, -0.732091, 0, -0.681206, -0.686658, 0.666111, -1.1694 )
+
+[node name="Sign2" type="MeshInstance" parent="Ground/Building/Wall4/Sign2"]
+transform = Transform( 0.788773, 0.106739, -0.605346, 0, 0.984808, 0.173648, 0.614684, -0.136969, 0.77679, 0, 0, 0 )
+mesh = SubResource( 11 )
+material/0 = null
+script = ExtResource( 16 )
+
+[node name="Viewport" type="Viewport" parent="Ground/Building/Wall4/Sign2/Sign2"]
+size = Vector2( 600, 400 )
+render_target_v_flip = true
+
+[node name="ViewportContainer" type="ViewportContainer" parent="Ground/Building/Wall4/Sign2/Sign2/Viewport"]
+margin_right = 100.0
+margin_bottom = 100.0
+rect_min_size = Vector2( 100, 100 )
+rect_scale = Vector2( 0.961778, 1.08347 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="Ground/Building/Wall4/Sign2/Sign2/Viewport/ViewportContainer"]
+margin_right = 655.0
+margin_bottom = 36.0
+custom_fonts/font = SubResource( 13 )
+custom_colors/font_color = Color( 1, 0, 0, 1 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "Freshly 
+Picked
+Ingrediants"
+align = 1
+valign = 1
+
 [node name="Wall5" type="MeshInstance" parent="Ground/Building"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 0 )
-mesh = SubResource( 11 )
-material/0 = SubResource( 12 )
+mesh = SubResource( 14 )
+material/0 = SubResource( 15 )
 
 [node name="Wall6" type="MeshInstance" parent="Ground/Building"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -11.9439, 3, 0 )
-mesh = SubResource( 13 )
+mesh = SubResource( 16 )
 material/0 = ExtResource( 1 )
 
 [node name="Wall7" type="MeshInstance" parent="Ground/Building"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -6.413, 3, 1.5 )
-mesh = SubResource( 14 )
-material/0 = SubResource( 15 )
+mesh = SubResource( 17 )
+material/0 = SubResource( 18 )
 
 [node name="Wall10" type="MeshInstance" parent="Ground/Building"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 1, 2 )
-mesh = SubResource( 16 )
-material/0 = SubResource( 17 )
+mesh = SubResource( 19 )
+material/0 = SubResource( 20 )
 
 [node name="Items" type="Spatial" parent="Ground/Building"]
 
@@ -261,26 +333,26 @@ transform = Transform( 1, 0, 0, 0, 3, 0, 0, 0, 1, -5.81723, 2.45576, 2.379 )
 
 [node name="Pipe" type="MeshInstance" parent="Ground/Building"]
 transform = Transform( -1.62921e-07, -1, 0, -1.62921e-07, 2.65431e-14, -1, 1, -1.62921e-07, -1.62921e-07, -6.45524, 3.45264, 2.3987 )
-mesh = SubResource( 18 )
-material/0 = SubResource( 19 )
+mesh = SubResource( 21 )
+material/0 = SubResource( 22 )
 
 [node name="Shutter" type="MeshInstance" parent="Ground/Building"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0 )
-mesh = SubResource( 20 )
-material/0 = SubResource( 25 )
+mesh = SubResource( 23 )
+material/0 = SubResource( 28 )
 
 [node name="Computer" type="MeshInstance" parent="Ground/Building"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -9.49158, 1.50579, 2.28785 )
-mesh = SubResource( 26 )
-material/0 = SubResource( 27 )
+mesh = SubResource( 29 )
+material/0 = SubResource( 30 )
 
 [node name="gate_simple" parent="Ground/Building/Computer" instance=ExtResource( 6 )]
 transform = Transform( -3.25841e-07, 0, 1, 0, 2, 0, -2, 0, -1.62921e-07, -2.30449, 0.826267, -0.00472736 )
 
 [node name="PortalTunnel" type="MeshInstance" parent="Ground/Building/Computer/gate_simple"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.38419e-07, 0.781153, -3.15882 )
-mesh = SubResource( 28 )
-material/0 = SubResource( 29 )
+mesh = SubResource( 31 )
+material/0 = SubResource( 32 )
 
 [node name="Car" parent="Ground/Building/Computer" instance=ExtResource( 7 )]
 transform = Transform( -1.62921e-07, 0, 1, 0, 1, 0, -1, 0, -1.62921e-07, 1.63921, 1.41989, 0 )
@@ -291,7 +363,7 @@ current = true
 
 [node name="Portal" type="MeshInstance" parent="Ground/Building/Computer"]
 transform = Transform( 0.1, 0, 0, 0, -0.173648, -0.984808, 0, 0.984808, -0.173648, -2.58604, 2.0438, 0 )
-mesh = SubResource( 31 )
+mesh = SubResource( 34 )
 material/0 = null
 
 [node name="PortalTarget" type="Spatial" parent="Ground/Building/Computer"]
@@ -299,7 +371,7 @@ transform = Transform( 0.1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 2.044, 0 )
 
 [node name="PortalSign" type="MeshInstance" parent="Ground/Building"]
 transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, -9.22027, 3.07613, 3.67867 )
-mesh = SubResource( 34 )
+mesh = SubResource( 37 )
 skeleton = NodePath("")
 material/0 = null
 script = ExtResource( 8 )
@@ -325,7 +397,7 @@ __meta__ = {
 [node name="Label" type="Label" parent="Ground/Building/PortalSign/Viewport/ViewportContainer"]
 margin_right = 655.0
 margin_bottom = 36.0
-custom_fonts/font = SubResource( 36 )
+custom_fonts/font = SubResource( 13 )
 custom_colors/font_color = Color( 1, 1, 1, 1 )
 text = "Fruitiverse Portal 
 Generator 9000!"
@@ -337,7 +409,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -8.91743, 0, 0 )
 
 [node name="ComputerScreen" type="MeshInstance" parent="Ground/Building/Spatial"]
 transform = Transform( -4.5, 2.43882e-07, -1.73531e-06, 0, 4.45621, 0.626279, 1.75236e-06, 0.626279, -4.45621, 1.20403, 2.49119, 0.358029 )
-mesh = SubResource( 37 )
+mesh = SubResource( 38 )
 material/0 = null
 script = ExtResource( 14 )
 
@@ -366,7 +438,7 @@ margin_left = 40.0
 margin_top = 100.0
 margin_right = 980.0
 margin_bottom = 550.0
-custom_fonts/font = SubResource( 39 )
+custom_fonts/font = SubResource( 40 )
 syntax_highlighting = true
 show_line_numbers = true
 smooth_scrolling = true
@@ -379,7 +451,7 @@ script = ExtResource( 13 )
 [node name="RichTextLabel" type="RichTextLabel" parent="Ground/Building/Spatial/ComputerScreen/Viewport/Control/ViewportContainer"]
 margin_right = 1020.0
 margin_bottom = 100.0
-custom_fonts/normal_font = SubResource( 41 )
+custom_fonts/normal_font = SubResource( 42 )
 bbcode_enabled = true
 bbcode_text = "[center]Fruit[color=#4ab3ff]OS"
 text = "FruitOS"
@@ -412,7 +484,7 @@ transform = Transform( -1.62921e-07, 3.25841e-07, 1, 0, -1, 3.25841e-07, 1, 5.30
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 4.03212, 4.73592, -0.313798 )
-environment = SubResource( 43 )
+environment = SubResource( 44 )
 
 [node name="CashRegister" type="AudioStreamPlayer3D" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3881, -1.67833 )

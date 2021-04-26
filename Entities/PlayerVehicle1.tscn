@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=2]
+[gd_scene load_steps=30 format=2]
 
 [ext_resource path="res://Entities/PlayerVehicle1.gd" type="Script" id=1]
 [ext_resource path="res://Entities/Vehicles/gltf/lightFront.material" type="Material" id=2]
@@ -15,6 +15,7 @@
 [ext_resource path="res://Audio/truck_reverse_beep_warning_01.wav" type="AudioStream" id=13]
 [ext_resource path="res://Audio/confirmation_002.ogg" type="AudioStream" id=14]
 [ext_resource path="res://Audio/error_002.ogg" type="AudioStream" id=15]
+[ext_resource path="res://Audio/sci-fi_hologram_electric_buzz_01.wav" type="AudioStream" id=16]
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "body"
@@ -378,6 +379,7 @@ anchor_bottom = 0.5
 margin_top = -184.5
 margin_right = 322.0
 margin_bottom = 184.5
+rect_scale = Vector2( 0.5, 0.5 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -463,10 +465,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-margin_left = -20.0
-margin_top = -20.0
-margin_right = 20.0
-margin_bottom = 20.0
+margin_left = -509.5
+margin_top = -300.0
+margin_right = 509.5
+margin_bottom = 300.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -486,6 +488,7 @@ custom_fonts/font = SubResource( 13 )
 custom_colors/font_color = Color( 0, 0.698039, 0.545098, 1 )
 custom_colors/font_color_shadow = Color( 1, 1, 1, 1 )
 text = "get the ingrediants!"
+align = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -505,6 +508,102 @@ custom_fonts/font = SubResource( 13 )
 custom_colors/font_color = Color( 0.643137, 0.764706, 0.054902, 1 )
 custom_colors/font_color_shadow = Color( 1, 1, 1, 1 )
 text = "get to the portal!"
+align = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="ObjectiveEscaped" type="Label" parent="ObjectivesTitle"]
+visible = false
+use_parent_material = true
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -279.0
+margin_top = -37.5
+margin_right = 279.0
+margin_bottom = 37.5
+custom_fonts/font = SubResource( 13 )
+custom_colors/font_color = Color( 0, 0.415686, 1, 1 )
+custom_colors/font_color_shadow = Color( 1, 1, 1, 1 )
+text = "escaped!"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PermanentTitles" type="Control" parent="."]
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+margin_left = -1022.0
+margin_top = -301.0
+margin_bottom = 301.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ObjectiveWarning" type="Label" parent="PermanentTitles"]
+visible = false
+use_parent_material = true
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -278.0
+margin_top = -38.5
+margin_right = 280.0
+margin_bottom = 36.5
+custom_fonts/font = SubResource( 13 )
+custom_colors/font_color = Color( 1, 0.447059, 0, 1 )
+custom_colors/font_color_shadow = Color( 1, 1, 1, 1 )
+text = "!"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ObjectiveSpotted" type="Label" parent="PermanentTitles"]
+visible = false
+use_parent_material = true
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -278.0
+margin_top = -38.5
+margin_right = 280.0
+margin_bottom = 36.5
+custom_fonts/font = SubResource( 13 )
+custom_colors/font_color = Color( 1, 0, 0, 1 )
+custom_colors/font_color_shadow = Color( 1, 1, 1, 1 )
+text = "Spotted"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ObjectiveHidden" type="Label" parent="PermanentTitles"]
+visible = false
+use_parent_material = true
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -278.0
+margin_top = -38.5
+margin_right = 280.0
+margin_bottom = 36.5
+custom_fonts/font = SubResource( 13 )
+custom_colors/font_color = Color( 0, 1, 1, 1 )
+custom_colors/font_color_shadow = Color( 1, 1, 1, 1 )
+text = "Hidden"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TeleportNoise" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 16 )

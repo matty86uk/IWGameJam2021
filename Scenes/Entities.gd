@@ -1,12 +1,9 @@
 extends Node
 
 var base_pedestrian = preload("res://Entities/BasePedestrian.tscn")
-
-#var base_vehicle = preload("res://Entities/BaseVehicle.tscn")
 var base_vehicle = preload("res://Entities/BaseVehicleRigid.tscn")
-#var base_vehicle_gsai = preload("res://Entities/BaseVehicleGSAI.tscn")
-
-#var entity_thread= Thread.new()
+var base_police = preload("res://Entities/BasePolice.tscn")
+var police_entity_scene = preload("res://Entities/Vehicles/police.tscn")
 
 var entity_types = {}
 var entities = {}
@@ -15,23 +12,59 @@ var entity_mm = {}
 
 var vehicles = []
 var pedestrians = []
+var polices = []
 
 var astar_dictionary = {}
 var astar_points_dictionary = {}
+var astar_secondary_type = {}
 
 var mi_debug = MeshInstance.new()
 var mat_debug = SpatialMaterial.new()
 
 var entity_tick = 0
 
+var player
+
+var police_update_timer
+
+var police_evade_time_max = 30
+var police_evade_time = 0
+var police_evade_time_interval = 5
+var police_alert = false
+var police_alert_perm = false
+
+func init_player(player):
+	player.connect("weapon_used", self, "_weapon_used")
+	player.connect("police_alerted", self, "_police_alerted")
+	player.connect("police_alerted_perm", self, "_police_alerted_perm")
+	self.player = player
+
+func _weapon_used():
+	police_alert = true
+	player.show_warning()
+
+func _police_alerted():
+	player.show_warning()
+	police_evade_time = 0
+
+func _police_alerted_perm():
+	police_alert_perm = true
+	player.show_warning()
+
 func _ready():
 	mat_debug.vertex_color_use_as_albedo = true	
 	mat_debug.flags_unshaded = true
 	add_child(mi_debug)
+	police_update_timer = Timer.new()
+	add_child(police_update_timer)
+	
+	police_update_timer.connect("timeout", self, "_on_timer_timeout")
+	police_update_timer.set_wait_time(police_evade_time_interval)
+	police_update_timer.set_one_shot(false) # Make sure it loops
+	police_update_timer.start()
 
 func start_entity_loop():
 	pass
-	#entity_thread.start(self, "entity_loop", "", 0)
 
 func add_entity_type(type, subtypes, scenes):
 	var subtypes_dictionary = {}
@@ -59,6 +92,11 @@ func add_entity_type(type, subtypes, scenes):
 		entities_subtypes_dictionary[subtype] = entities_subtype_dictionary#
 		index+=1
 
+func add_entity_type_astar_v2(type, astar, astar_points, secondary_type):
+	astar_dictionary[type] = astar
+	astar_points_dictionary[type] = astar_points
+	astar_secondary_type[type] = secondary_type
+
 func add_entity_type_astar(type, astar, astar_points):
 	astar_dictionary[type] = astar
 	astar_points_dictionary[type] = astar_points
@@ -68,6 +106,8 @@ func add_entity(type, subtype, position):
 		add_vehicle(type, subtype, position)
 	elif type == "pedestrian":
 		add_pedestrian(type, subtype, position)
+	elif type == "police":
+		add_police(type, subtype, position)
 
 func add_vehicle(type, subtype, position):
 	var new_vehicle = base_vehicle.instance()
@@ -94,14 +134,27 @@ func add_pedestrian(type, subtype, position):
 	new_pedestrian.set_meta("subtype", subtype)
 	add_child(new_pedestrian)
 	pedestrians.push_back(new_pedestrian)
-	
-	
+
+func add_police(type, subtype, position):
+	var new_police = base_police.instance()
+	new_police.transform = Transform(Basis(), position)
+	var new_entity_scene = police_entity_scene.instance()
+	for child in new_entity_scene.get_children():
+		new_entity_scene.remove_child(child)
+		new_police.add_child(child)
+	new_police.state = new_police.STATE_INSTANCED
+	new_police.set_meta("type", type)
+	new_police.set_meta("subtype", subtype)
+	add_child(new_police)
+	polices.push_back(new_police)
+
+
 func _process(delta):
 	entity_loop()
 	pass
 	
 func entity_loop():	
-	
+		do_police()
 		for vehicle in vehicles:
 			var vehicle_state = vehicle.state
 			var next_vehicle_state = null
@@ -145,7 +198,7 @@ func entity_loop():
 					if path.size() > 0:
 						pedestrian.set_path(path)
 						next_pedestrian_state = pedestrian.STATE_HAS_ORDERS
-					else:				
+					else:
 						print("No path")
 						var new_path = []
 						new_path.push_back(pedestrian.transform.origin)
@@ -163,19 +216,98 @@ func entity_loop():
 					check_pedestrian_point(pedestrian)
 			if next_pedestrian_state:
 				pedestrian.state = next_pedestrian_state
+		
 
-#
-#func _process(delta):
-#	pass
+func do_police():
+	for police in polices:
+		var police_state =police.state
+		var next_police_state = null
+		match police_state:
+			police.STATE_INSTANCED:
+				police.mode = police.MODE_PATROL
+				next_police_state = police.STATE_READY
+			police.STATE_READY:
+				var path = [police.global_transform.origin]
+				if police.mode == police.MODE_PATROL:
+					path = generate_vehicle_path(police.global_transform.origin)
+				police.set_path(path)
+				police.set_path_index(0)
+				next_police_state = police.STATE_HAS_ORDERS
+			police.STATE_HAS_ORDERS:
+				next_police_state = police.STATE_ENABLED
+			police.STATE_ENABLED:
+				check_police_point(police)
+				if police.mode == police.MODE_CHASE:
+					if player:
+						var player_pos = player.global_transform.origin
+						if police.can_see_player(player) and police.global_transform.origin.distance_to(player_pos) < 10:
+							police.chase_direct = true
+							police.chase_point = player_pos
+							police_alert = true
+							#police_evade_time = 0
+						else: #goto player position
+							police.chase_direct = false
+				elif police.mode == police.MODE_PATROL:
+					if police.can_see_player(player) and police_alert:
+						police.alert()
+			police.STATE_MODE_CHANGED:
+				police.state = police.STATE_READY
+		if next_police_state:
+			police.state = next_police_state
+			
+func _on_timer_timeout():
+	if police_alert_perm:
+		police_alert = true
+		police_evade_time = 0
+	var player_seen = false
+	for police in polices:
+		var police_state = police.state
+		if police.state == police.STATE_ENABLED and not police.chase_direct:
+			if police.mode == police.MODE_CHASE:
+				var player_pos = player.global_transform.origin
+				var path = [police.global_transform.origin]
+				var last_chase_path_point = player_pos
+				if police.chase_path.size() > 0:
+					last_chase_path_point = police.chase_path[police.chase_path.size()-1]
+				if police.chase_path.size() == 0 or player_pos.distance_to(last_chase_path_point) > 3:
+					path = generate_police_path(police.global_transform.origin, player.global_transform.origin)
+					police.set_path(path)
+		if police.can_see_player(player) and police_alert:
+			player_seen = true
+			print("Spotted")
+			player.show_spotted()
+			police_evade_time = 0
+		else:
+			pass
+	
+	if player_seen:
+		player.hide_hiding()
+		
+
+	if not player_seen:
+		print("Hiding")
+		if police_alert:
+			player.show_hiding()
+		police_evade_time += police_evade_time_interval
+		if police_evade_time > police_evade_time_max:
+			police_alert = false
+			player.hide_warning()
+			police_evade_time =  police_evade_time_max + 1
+			print("Escaped")
+			var was_chased = false
+			for police in polices:
+				if police.mode == police.MODE_CHASE:
+					was_chased = true
+				police.unalert()
+			if was_chased:
+				player.show_escaped()
+	else:
+		police_alert = true
 	
 func generate_vehicle_path(from):
 	var astar = astar_dictionary["vehicle"]
 	var from_point = astar.get_closest_point(from)
 	var to_point = astar_points_dictionary["vehicle"][randi() % astar_points_dictionary["vehicle"].size()-1]
-#	var path = []
-#	path.push_back(Vector3(0,0,-20))
-#	path.push_back(Vector3(0,0,-19))
-#	return path
 	return astar.get_point_path(from_point, to_point)
 	
 func generate_pedestrian_path(from):
@@ -183,7 +315,13 @@ func generate_pedestrian_path(from):
 	var from_point = astar.get_closest_point(from)
 	var to_point = astar_points_dictionary["pedestrian"][randi() % astar_points_dictionary["pedestrian"].size()-1]
 	return astar.get_point_path(from_point, to_point)
-	
+
+func generate_police_path(from, to):
+	var astar = astar_dictionary["police"]
+	var from_point = astar.get_closest_point(from)
+	var to_point = astar_points_dictionary["police"][randi() % astar_points_dictionary["police"].size()-1]
+	return astar.get_point_path(from_point, to_point)
+
 func debug_show_path(vehicle):
 	var st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_LINES)
@@ -226,5 +364,33 @@ func check_pedestrian_point(pedestrian):
 	else:
 		print("new orders")
 		pedestrian.state = pedestrian.STATE_READY
+	pass
+	
+func check_police_point(police):
+	
+	var path = []
+	var path_index = 0
+	
+	if police.mode == police.MODE_PATROL:
+		path = police.patrol_path
+		path_index = police.patrol_path_index
+	elif police.mode == police.MODE_CHASE:
+		path = police.chase_path
+		path_index = police.chase_path_index
+	
+	if path.size() > 0 and  path_index < path.size():
+		var target = path[path_index]
+		var from = police.get_global_transform().origin
+		var distance =  from.distance_squared_to(target)
+		if distance < 3:
+			if police.mode == police.MODE_PATROL:
+				police.patrol_path_index += 1
+			elif police.mode == police.MODE_CHASE:
+				police.chase_path_index += 1
+#		elif distance > 6:
+#			vehicle.state = vehicle.STATE_READY		
+	else:
+		#print("police new orders")
+		police.state = police.STATE_READY
 	pass
 

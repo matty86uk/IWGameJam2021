@@ -3,6 +3,13 @@ extends "res://Entities/BasePlayer.gd"
 signal forward_camera
 signal reverse_camera
 
+signal weapon_used
+signal police_alerted
+signal police_alerted_perm
+
+signal portal_on
+signal player_won
+
 var weapon_ballista_scene = preload("res://Entities/Weapons/gltf/weapon_ballista.glb")
 var player_ui_scene = preload("res://Scenes/PlayerUI.tscn")
 
@@ -46,6 +53,9 @@ var objectives = {}
 var playing = true
 var starting_color = Color.white
 var target_color = Color.transparent
+
+var spawn_point
+var portal_spawned = false
 
 func _ready():
 	weapon = weapon_ballista_scene.instance()
@@ -92,12 +102,41 @@ func init(projectile_root : Spatial, projectile_rope : MeshInstance, projectile_
 			required_fruits[drink_name] = required_fruits[drink_name] + 1
 	print(required_fruits)
 	$ObjectivesTitle/ObjectiveFruit.show()
+
+func set_spawn_point(position):
+	spawn_point = position
 	
 func show_player_ui():
 	player_ui.show()
 	
 func hide_player_ui():
 	pass
+	
+func show_warning():
+	$PermanentTitles/ObjectiveWarning.show()
+	pass
+
+func hide_warning():
+	$PermanentTitles/ObjectiveWarning.hide()
+
+func show_spotted():
+	$PermanentTitles/ObjectiveSpotted.show()
+	
+	
+func show_escaped():
+	$ObjectivesTitle/ObjectiveEscaped.modulate = starting_color
+	$ObjectivesTitle/ObjectiveEscaped.show()
+	$PermanentTitles/ObjectiveWarning.hide()
+	$PermanentTitles/ObjectiveSpotted.hide()
+	$PermanentTitles/ObjectiveHidden.hide()
+	
+func show_hiding():
+	pass
+	#$PermanentTitles/ObjectiveHidden.show()
+
+func hide_hiding():	
+	pass
+	#$PermanentTitles/ObjectiveHidden.hide()
 
 func brake_lights(value):
 	if value:
@@ -131,8 +170,10 @@ func get_input():
 	$Engine.set_unit_db(velocity_length)
 	$Engine.set_pitch_scale( 1 + (velocity_length/3))
 	
+	#print(global_transform.origin)
+	
 func _input(event):
-	if event.is_action_pressed("fire"):
+	if event.is_action_pressed("fire"):		
 		fired = true
 
 func _physics_process(delta):
@@ -160,6 +201,8 @@ func _physics_process(delta):
 		fired = false
 		##if in range		
 		if not intersection.empty():
+			emit_signal("weapon_used")
+			emit_signal("police_alerted")
 			print("fired")
 			if weapon_projectile_start.global_transform.origin.distance_to(intersection.position) < 25:
 				weapon_projectile_start.hide()
@@ -217,6 +260,9 @@ func check_complete():
 	if fruit_count == 0:
 		$ObjectivesTitle/ObjectivePortal.show()
 		$ObjectivesTitle/ObjectivePortal.modulate = starting_color
+		emit_signal("police_alerted_perm")
+		emit_signal("portal_on")
+		portal_spawned = true
 		return true
 	else:
 		print("not complete")
@@ -224,10 +270,17 @@ func check_complete():
 
 func _process(delta):
 	if playing:
-		if not $ObjectivesTitle/ObjectiveFruit.modulate.is_equal_approx(target_color):
-			$ObjectivesTitle/ObjectiveFruit.modulate = $ObjectivesTitle/ObjectiveFruit.modulate.linear_interpolate(target_color, delta)
-		if not $ObjectivesTitle/ObjectivePortal.modulate.is_equal_approx(target_color):
-			$ObjectivesTitle/ObjectivePortal.modulate = $ObjectivesTitle/ObjectivePortal.modulate.linear_interpolate(target_color, delta)
+		var children = $ObjectivesTitle.get_children()
+		for child in children:
+			if not child.modulate.is_equal_approx(target_color):
+				child.modulate = child.modulate.linear_interpolate(target_color, delta)
+#			if not $ObjectivesTitle/ObjectiveFruit.modulate.is_equal_approx(target_color):
+#				$ObjectivesTitle/ObjectiveFruit.modulate = $ObjectivesTitle/ObjectiveFruit.modulate.linear_interpolate(target_color, delta)
+#			if not $ObjectivesTitle/ObjectivePortal.modulate.is_equal_approx(target_color):
+#				$ObjectivesTitle/ObjectivePortal.modulate = $ObjectivesTitle/ObjectivePortal.modulate.linear_interpolate(target_color, delta)
+		if portal_spawned:
+			if global_transform.origin.distance_squared_to(spawn_point) < 4:
+				emit_signal("player_won")
 	if caught_object:
 		pass
 	$VanCamViewPort/VanCam.global_transform = $VanCameraPoint.global_transform
@@ -237,13 +290,14 @@ func _process(delta):
 
 func render_rope_to(from, to):
 	var from_point = from.global_transform.origin
-	var to_point = to.global_transform.origin + to.global_transform.basis.z/2
-	var st = SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_LINES)
-	st.add_color(Color.brown)
-	st.add_vertex(from_point)
-	st.add_vertex(to_point)
-	var mesh = st.commit()
-	projectile_rope.mesh = mesh
-	projectile_rope.material_override = mat
+	if to:
+		var to_point = to.global_transform.origin + to.global_transform.basis.z/2
+		var st = SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_LINES)
+		st.add_color(Color.brown)
+		st.add_vertex(from_point)
+		st.add_vertex(to_point)
+		var mesh = st.commit()
+		projectile_rope.mesh = mesh
+		projectile_rope.material_override = mat
 	

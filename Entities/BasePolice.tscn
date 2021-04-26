@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Entities/BasePolice.gd" type="Script" id=1]
+[ext_resource path="res://Audio/zapsplat_emergency_police_siren_isolated_clean_003_63709.wav" type="AudioStream" id=2]
+[ext_resource path="res://Audio/engine_heavy_slow_loop.wav" type="AudioStream" id=3]
+
+[node name="Police" type="KinematicBody"]
+script = ExtResource( 1 )
+
+[node name="ForwardCast" type="RayCast" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.000298858, 0.25, -0.00196522 )
+enabled = true
+cast_to = Vector3( 0, 0, -2 )
+
+[node name="PlayerCast" type="RayCast" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0 )
+enabled = true
+cast_to = Vector3( 0, 0, -30 )
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+
+[node name="Siren" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 2 )
+
+[node name="Engine" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 3 )
+unit_db = -1.0
+max_db = 1.0
+doppler_tracking = 2

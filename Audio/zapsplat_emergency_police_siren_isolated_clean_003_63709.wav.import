@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/zapsplat_emergency_police_siren_isolated_clean_003_63709.wav-2010f86966f86d71bd6add5ca53b1d9d.sample"
+
+[deps]
+
+source_file="res://Audio/zapsplat_emergency_police_siren_isolated_clean_003_63709.wav"
+dest_files=[ "res://.import/zapsplat_emergency_police_siren_isolated_clean_003_63709.wav-2010f86966f86d71bd6add5ca53b1d9d.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=true
+edit/normalize=false
+edit/loop=true
+compress/mode=0

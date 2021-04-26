@@ -58,6 +58,7 @@ var mi_object = MeshInstance.new()
 var world_size
 
 var current_camera_pos
+var player_spawn_point
 
 func _physics_process(delta):
 	if current_camera_pos:
@@ -90,14 +91,22 @@ func generate_world(world_seed : int):
 	var pedestrian_nav = generate_astar_pedestrian(map_dictionary)
 	var pedestrian_astar = pedestrian_nav.get("astar")
 	var pedestrian_points =  pedestrian_astar.get_points()
+	
+	var police_astar = generate_astar_police(map_dictionary)
+	var police_points = police_astar.get_points()
+	
 	entities.add_entity_type_astar("vehicle", vehicle_astar, vehicle_points)
 	entities.add_entity_type_astar("pedestrian", pedestrian_astar, pedestrian_points)
+	entities.add_entity_type_astar_v2("police", police_astar, police_points, "vehicle")
 	
 	navigation_astar["vehicle"] = vehicle_astar
 	navigation_points["vehicle"] = vehicle_points
 	
 	navigation_astar["pedestrian"] = pedestrian_astar
 	navigation_points["pedestrian"] = pedestrian_points
+	
+	navigation_astar["police"] = police_astar
+	navigation_points["police"] = police_points
 		
 	#World
 	world_size = find_world_size(map_dictionary)
@@ -114,7 +123,7 @@ func generate_world(world_seed : int):
 func create_entity_types(type, sub_types, packed_scenes):
 	entities.add_entity_type(type, sub_types, packed_scenes)
 
-func create_entity(type, subtype):
+func create_entity(type, subtype):	
 	entities.add_entity(type, subtype, random_spawn_point_for_entity(type) + Vector3.UP)
 
 func random_spawn_point_for_entity(type):
@@ -123,14 +132,28 @@ func random_spawn_point_for_entity(type):
 func spawn_player(fruit_data, scene_dictionary, drink_order):
 	var max_x = world_size["max_x"]
 	var max_z = world_size["max_z"]
+	player_spawn_point = Vector3(max_x - 20, 0, max_z - 20)
 	player = player_scene.instance()
-	player.transform.origin = Vector3(max_x - 20, 0, max_z - 20)
+	player.transform.origin = player_spawn_point
 	player.init($Root, $Root/Rope, projectile_scene, $Camera, fruit_data, scene_dictionary, drink_order)
+	player.set_spawn_point(player_spawn_point)
 	player.connect("forward_camera", self, "_forward_camera")
 	player.connect("reverse_camera", self, "_reverse_camera")
+	player.connect("portal_on", self, "_portal_on")
+	player.connect("player_won", self, "_player_won")
+	player.set_meta("type", "player")
 	$Root.add_child(player)
+	entities.init_player(player)
 	entities.start_entity_loop()
 	
+func _portal_on():
+	$Root/PortalExit.global_transform.origin = player_spawn_point
+	$Root/PortalExit.show()
+	$Root/PortalExit.play_noise()
+
+func _player_won():
+	print("Player won")
+
 func _forward_camera():
 	transition_camera("Final")
 
@@ -540,6 +563,58 @@ func get_pavement_directions(pavement_points, point):
 		directions.push_back(Vector3.RIGHT/4)
 	return directions
 
+func generate_astar_police(map_dictionary):
+	
+	var police_points = {}
+	for p in map_dictionary.keys():
+		var type = map_dictionary.get(p)
+		if type == "ROAD":
+			var forward = p + Vector3.FORWARD
+			var back = p + Vector3.BACK
+			var left = p + Vector3.LEFT
+			var right = p + Vector3.RIGHT
+			
+			var directions = []
+			if map_dictionary.get(forward) == "ROAD":
+				directions.push_back(Vector3.FORWARD)
+			if map_dictionary.get(back) == "ROAD":
+				directions.push_back(Vector3.BACK)
+			if map_dictionary.get(left) == "ROAD":
+				directions.push_back(Vector3.LEFT)
+			if  map_dictionary.get(right) == "ROAD":
+				directions.push_back(Vector3.RIGHT)
+				
+			police_points[p] = directions
+	
+	var id_list = {}
+	var astar = AStar.new()
+	
+	for p in police_points:
+		var id = generate_or_get_id_for_point(p, id_list)
+		astar.add_point(id, p)
+
+	var st = SurfaceTool.new()	
+	st.begin(Mesh.PRIMITIVE_LINES)
+	for p in police_points:
+		var id = generate_or_get_id_for_point(p, id_list)
+		var directions = police_points[p]
+		for direction in directions:
+			var target_id = generate_or_get_id_for_point(p + direction, id_list)
+			astar.connect_points(id, target_id, true)
+			st.add_color(Color.green)
+			st.add_vertex(p + Vector3.UP)
+			st.add_color(Color.white)
+			st.add_vertex(p + direction + (Vector3.UP * 0.5))
+	var mesh = st.commit()
+	var mat = SpatialMaterial.new()
+	mat.vertex_color_use_as_albedo = true
+	mat.flags_unshaded = true
+	var mi = MeshInstance.new()
+	mi.mesh = mesh
+	mi.material_override = mat
+	#$Root.add_child(mi)
+	return astar
+
 func generate_or_get_id_for_point(point, id_list):
 	if !id_list.has(point):
 		id_list[point] = id_list.size() + 1
@@ -846,7 +921,7 @@ func create_floor_mesh(map_dictionary, min_x, max_x, min_z, max_z):
 	var m = MeshInstance.new()
 	var mat = SpatialMaterial.new()
 	mat.vertex_color_is_srgb = true
-	mat.albedo_color = Color.green.darkened(0.2) #* (randf() * 0.01)
+	mat.albedo_color = Color.green.darkened(0.2)
 	mat.vertex_color_use_as_albedo = true
 	mat.flags_use_point_size = true
 	mat.params_point_size = 5
