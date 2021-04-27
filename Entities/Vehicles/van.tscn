@@ -8,7 +8,7 @@
 [ext_resource path="res://Entities/Vehicles/gltf/carTire.material" type="Material" id=6]
 [ext_resource path="res://Entities/Vehicles/gltf/_defaultMat.material" type="Material" id=7]
 
-[sub_resource type="ArrayMesh" id=8]
+[sub_resource type="ArrayMesh" id=1]
 resource_name = "body"
 surfaces/0 = {
 "aabb": AABB( -0.75, 0, -1.25, 1.5, 1.1, 2.7 ),
@@ -83,7 +83,7 @@ surfaces/5 = {
 "vertex_count": 1186
 }
 
-[sub_resource type="ArrayMesh" id=9]
+[sub_resource type="ArrayMesh" id=2]
 resource_name = "wheel_backLeft"
 surfaces/0 = {
 "aabb": AABB( 0, -0.3, -0.3, 0.3, 0.6, 0.6 ),
@@ -113,9 +113,9 @@ surfaces/1 = {
 [sub_resource type="BoxShape" id=3]
 extents = Vector3( 0.32, 0.275, 0.65 )
 
-[sub_resource type="CylinderShape" id=6]
+[sub_resource type="CylinderShape" id=4]
 
-[sub_resource type="CylinderShape" id=7]
+[sub_resource type="CylinderShape" id=5]
 
 [node name="van" type="KinematicBody"]
 
@@ -125,7 +125,7 @@ extents = Vector3( 0.32, 0.275, 0.65 )
 
 [node name="body" type="MeshInstance" parent="tmpParent/van"]
 transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.2, -0.1 )
-mesh = SubResource( 8 )
+mesh = SubResource( 1 )
 material/0 = null
 material/1 = null
 material/2 = null
@@ -135,25 +135,25 @@ material/5 = null
 
 [node name="wheel_backLeft" type="MeshInstance" parent="tmpParent/van"]
 transform = Transform( -0.5, 0, 0, 0, 0.5, -4.37114e-08, 0, 4.37114e-08, 0.5, -0.175, 0.25, 0.32 )
-mesh = SubResource( 9 )
+mesh = SubResource( 2 )
 material/0 = null
 material/1 = null
 
 [node name="wheel_backRight" type="MeshInstance" parent="tmpParent/van"]
 transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0.175, 0.25, 0.32 )
-mesh = SubResource( 9 )
+mesh = SubResource( 2 )
 material/0 = null
 material/1 = null
 
 [node name="wheel_frontLeft" type="MeshInstance" parent="tmpParent/van"]
 transform = Transform( -0.5, 0, 0, 0, 0.5, -4.37114e-08, 0, 4.37114e-08, 0.5, -0.175, 0.25, -0.43 )
-mesh = SubResource( 9 )
+mesh = SubResource( 2 )
 material/0 = null
 material/1 = null
 
 [node name="wheel_frontRight" type="MeshInstance" parent="tmpParent/van"]
 transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0.175, 0.25, -0.43 )
-mesh = SubResource( 9 )
+mesh = SubResource( 2 )
 material/0 = null
 material/1 = null
 
@@ -163,8 +163,8 @@ shape = SubResource( 3 )
 
 [node name="CollisionWheelsRear" type="CollisionShape" parent="."]
 transform = Transform( -2.44381e-08, -0.325, 0, 0.15, -5.29492e-08, 0, 0, 0, 0.15, 0, 0.25, 0.32 )
-shape = SubResource( 6 )
+shape = SubResource( 4 )
 
 [node name="CollisionWheelsFront" type="CollisionShape" parent="."]
 transform = Transform( -2.44381e-08, -0.325, 0, 0.15, -5.29492e-08, 0, 0, 0, 0.15, 0, 0.25, -0.43 )
-shape = SubResource( 7 )
+shape = SubResource( 5 )

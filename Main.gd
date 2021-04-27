@@ -14,13 +14,13 @@ func _ready():
 	print(p2 + Vector3.BACK/4 * 2)
 
 	var vehicle_dictionary = load_vehicle_scenes()
-	game.add_scene_dictionary(vehicle_dictionary, "vehicle", load_json_file("res://Data/vehicles.tres"))
+	game.add_scene_dictionary(vehicle_dictionary, "vehicle", load_json_file("res://Data/vehicles.txt"))
 
 	var pedestrian_dictionary = load_pedestrian_scenes()
-	game.add_scene_dictionary(pedestrian_dictionary, "pedestrian", load_json_file("res://Data/pedestrians.tres"))
+	game.add_scene_dictionary(pedestrian_dictionary, "pedestrian", load_json_file("res://Data/pedestrians.txt"))
 	
 	var police_dictionary = load_police_scenes()
-	game.add_scene_dictionary(police_dictionary, "police", load_json_file("res://Data/police.tres"))
+	game.add_scene_dictionary(police_dictionary, "police", load_json_file("res://Data/police.txt"))
 	
 	add_child(game)
 
