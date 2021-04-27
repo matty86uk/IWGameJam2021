@@ -1,9 +1,10 @@
-[gd_scene load_steps=18 format=2]
+[gd_scene load_steps=19 format=2]
 
 [ext_resource path="res://Materials/wood.material" type="Material" id=1]
 [ext_resource path="res://Entities/ShopStuff/bowl_static_body.tscn" type="PackedScene" id=2]
 [ext_resource path="res://Scenes/BlenderScene.gd" type="Script" id=3]
 [ext_resource path="res://Entities/ShopStuff/bowl_flat.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Audio/cartoon_boing_jump_01.wav" type="AudioStream" id=5]
 
 [sub_resource type="CubeMesh" id=1]
 size = Vector3( 2, 3, 4 )
@@ -113,3 +114,9 @@ visible = false
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( -0.866025, -0.353554, 0.353554, 0, 0.707107, 0.707107, -0.5, 0.612372, -0.612372, -2.91813, 14.5614, -3.18485 )
+current = true
+
+[node name="Jump" type="AudioStreamPlayer3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.74017, 13.3025, -1.08028 )
+stream = ExtResource( 5 )
+unit_db = 4.0

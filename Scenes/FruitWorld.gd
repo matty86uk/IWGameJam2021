@@ -1,6 +1,7 @@
 extends Spatial
 
-signal loading(what)
+signal normal_music
+signal getaway_music
 
 var entities = load("res://Scenes/Entities.tscn").instance()
 var player_scene = load("res://Entities/PlayerVehicle1.tscn")
@@ -9,6 +10,12 @@ var projectile_scene = load("res://Entities/Weapons/BallistaProjectile.tscn")
 var size_x
 var size_z
 var player
+
+var starting_color = Color.white
+var target_color = Color.transparent
+
+var blender_on = false
+
 
 var navigation_points = {}
 var navigation_astar = {}
@@ -56,14 +63,46 @@ var camera_path = []
 var mi_object = MeshInstance.new()
 
 var world_size
+var world_centre
 
 var current_camera_pos
 var player_spawn_point
+var player_won = false
+
+var four_corner_cam = false
+var four_corners = []
+var four_corner_index = 0
+
+var fruit_data
+var drink_order
+var scene_dictionary
 
 func _physics_process(delta):
 	if current_camera_pos:
-		if not $Camera.global_transform.is_equal_approx(current_camera_pos.global_transform):
+		if not four_corner_cam and not $Camera.global_transform.is_equal_approx(current_camera_pos.global_transform):
 			$Camera.global_transform = $Camera.global_transform.interpolate_with(current_camera_pos.global_transform, delta* 3.0)
+		if four_corner_cam:
+			if not $Camera.global_transform.origin.distance_squared_to(four_corners[four_corner_index]) < 4:
+				$Camera.global_transform.origin = $Camera.global_transform.origin.linear_interpolate(four_corners[four_corner_index], delta * 0.25)
+				$Camera.look_at(world_centre, Vector3.UP)
+			else:
+				four_corner_index += 1
+				if four_corner_index >= four_corners.size():
+					four_corner_index = 0
+
+func _process(delta):
+	if player_won:
+		if blender_on:
+			$ObjectiveEnd/BlenderRect.texture = $Viewport.get_texture()
+		else:
+			if not $ObjectiveEnd.modulate.is_equal_approx(target_color):
+				$ObjectiveEnd.modulate = $ObjectiveEnd.modulate.linear_interpolate(target_color, delta)
+		
+		
+		if not $ObjectiveSuccess.modulate.is_equal_approx(target_color):
+			$ObjectiveSuccess.modulate = $ObjectiveSuccess.modulate.linear_interpolate(target_color, delta * 0.25)
+		
+	
 
 func generate_world(world_seed : int):
 	rand_seed(world_seed)
@@ -80,7 +119,7 @@ func generate_world(world_seed : int):
 	#Buildings
 	var building_points = generate_buildings(map_dictionary)
 	var middle_of_building = assign_buildings_and_calculate_middle(map_dictionary, building_points)
-	
+	world_centre = middle_of_building
 	##Expand Buildings
 	var buildings = expand_buildings_v2(map_dictionary, middle_of_building)
 	#expand_buildings_v2(map_dictionary, middle_of_building)
@@ -111,6 +150,13 @@ func generate_world(world_seed : int):
 	#World
 	world_size = find_world_size(map_dictionary)
 	
+	#store four corners
+	four_corners.push_back(Vector3(world_size["min_x"] + 30, 50, world_size["min_z"] + 30))
+	four_corners.push_back(Vector3(world_size["min_x"]+ 30 , 50, world_size["max_z"] - 30))
+	four_corners.push_back(Vector3(world_size["max_x"] - 30, 50, world_size["max_z"] - 30))
+	four_corners.push_back(Vector3(world_size["max_x"] - 30, 50, world_size["min_z"] + 30))
+	
+	
 	#floor
 	create_floor_mesh(map_dictionary, world_size["min_x"], world_size["max_x"], world_size["min_z"], world_size["max_z"])
 	
@@ -130,6 +176,12 @@ func random_spawn_point_for_entity(type):
 	return navigation_astar[type].get_point_position(navigation_points[type][randi() % navigation_points[type].size()-1])
 
 func spawn_player(fruit_data, scene_dictionary, drink_order):
+	
+	self.scene_dictionary = scene_dictionary
+	self.fruit_data = fruit_data
+	self.drink_order = drink_order
+	
+	emit_signal("normal_music")
 	var max_x = world_size["max_x"]
 	var max_z = world_size["max_z"]
 	player_spawn_point = Vector3(max_x - 20, 0, max_z - 20)
@@ -141,6 +193,7 @@ func spawn_player(fruit_data, scene_dictionary, drink_order):
 	player.connect("reverse_camera", self, "_reverse_camera")
 	player.connect("portal_on", self, "_portal_on")
 	player.connect("player_won", self, "_player_won")
+	player.connect("getaway", self, "_getaway")
 	player.set_meta("type", "player")
 	$Root.add_child(player)
 	entities.init_player(player)
@@ -153,6 +206,25 @@ func _portal_on():
 
 func _player_won():
 	print("Player won")
+	if not player_won:
+		transition_camera_world()
+		player_won = true
+		four_corner_cam = true
+		$ObjectiveEnd.show()
+		$ObjectiveEnd.modulate = starting_color
+		blender_on = true
+		$Viewport/Blender.connect("blender_finished", self, "_blender_finished")
+		$Viewport/Blender.init(drink_order, fruit_data, scene_dictionary)
+		$Viewport/Blender.start()
+		emit_signal("normal_music")
+
+func _blender_finished():
+	blender_on = false
+	$ObjectiveSuccess.show()	
+	$ObjectiveSuccess.modulate = starting_color
+
+func _getaway():
+	emit_signal("getaway_music")
 
 func _forward_camera():
 	transition_camera("Final")
@@ -162,6 +234,9 @@ func _reverse_camera():
 	
 func show_player_ui():
 	player.show_player_ui()
+
+func hide_player_ui():
+	player.show_player_ui()
 	
 func move_camera(position):
 	$Camera.global_transform = player.get_node(str("Camera", position)).global_transform	
@@ -169,7 +244,10 @@ func move_camera(position):
 	
 func transition_camera(position):
 	current_camera_pos =  player.get_node(str("Camera", position))
-	
+
+func transition_camera_world():
+	current_camera_pos = $Root/HighPoint
+
 func set_current_camera():
 	$Camera.current = true
 	

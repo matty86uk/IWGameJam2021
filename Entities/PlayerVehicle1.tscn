@@ -363,6 +363,7 @@ near = 0.01
 
 [node name="Engine" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource( 10 )
+unit_db = -3.0
 
 [node name="Tyre" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource( 11 )
@@ -548,14 +549,13 @@ __meta__ = {
 [node name="ObjectiveWarning" type="Label" parent="PermanentTitles"]
 visible = false
 use_parent_material = true
-anchor_left = 0.5
+anchor_left = 1.0
 anchor_top = 0.5
-anchor_right = 0.5
+anchor_right = 1.0
 anchor_bottom = 0.5
-margin_left = -278.0
-margin_top = -38.5
-margin_right = 280.0
-margin_bottom = 36.5
+margin_left = -154.0
+margin_top = -37.0
+margin_bottom = 38.0
 custom_fonts/font = SubResource( 13 )
 custom_colors/font_color = Color( 1, 0.447059, 0, 1 )
 custom_colors/font_color_shadow = Color( 1, 1, 1, 1 )
@@ -579,7 +579,6 @@ margin_bottom = 36.5
 custom_fonts/font = SubResource( 13 )
 custom_colors/font_color = Color( 1, 0, 0, 1 )
 custom_colors/font_color_shadow = Color( 1, 1, 1, 1 )
-text = "Spotted"
 align = 1
 __meta__ = {
 "_edit_use_anchors_": false
@@ -605,5 +604,5 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="TeleportNoise" type="AudioStreamPlayer3D" parent="."]
+[node name="TeleportNoise" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 16 )

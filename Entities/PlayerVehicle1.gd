@@ -10,6 +10,8 @@ signal police_alerted_perm
 signal portal_on
 signal player_won
 
+signal getaway
+
 var weapon_ballista_scene = preload("res://Entities/Weapons/gltf/weapon_ballista.glb")
 var player_ui_scene = preload("res://Scenes/PlayerUI.tscn")
 
@@ -56,6 +58,7 @@ var target_color = Color.transparent
 
 var spawn_point
 var portal_spawned = false
+var player_has_won = false
 
 func _ready():
 	weapon = weapon_ballista_scene.instance()
@@ -110,6 +113,7 @@ func show_player_ui():
 	player_ui.show()
 	
 func hide_player_ui():
+	player_ui.hide()
 	pass
 	
 func show_warning():
@@ -173,8 +177,18 @@ func get_input():
 	#print(global_transform.origin)
 	
 func _input(event):
-	if event.is_action_pressed("fire"):		
+	if player_has_won:
+		return
+	if event.is_action_pressed("fire"):
 		fired = true
+	if event is InputEventKey and event.scancode == KEY_K:
+		player_has_won_game()
+		
+func player_has_won_game():
+	emit_signal("player_won")
+	player_has_won = true
+	player_ui.hide()
+	$Objectives.hide()
 
 func _physics_process(delta):
 	var space_state = get_world().direct_space_state
@@ -237,10 +251,12 @@ func _on_reloaded():
 	if caught_object:
 		if caught_object.get_meta("type") == "pedestrian":
 			var fruit = caught_object.get_meta("subtype")
+			
 			if required_fruits.has(fruit):
 				if required_fruits.get(fruit) > 0:
 					$Correct.play()
 					caught_object.global_transform.origin = $DropPoint.global_transform.origin
+					caught_object.set_contact_monitor(false)
 					required_fruits[fruit] = required_fruits[fruit] - 1
 					var objective_labels = objectives[fruit]
 					if objective_labels.size() > 0:
@@ -262,6 +278,7 @@ func check_complete():
 		$ObjectivesTitle/ObjectivePortal.modulate = starting_color
 		emit_signal("police_alerted_perm")
 		emit_signal("portal_on")
+		emit_signal("getaway")
 		portal_spawned = true
 		return true
 	else:
@@ -280,7 +297,8 @@ func _process(delta):
 #				$ObjectivesTitle/ObjectivePortal.modulate = $ObjectivesTitle/ObjectivePortal.modulate.linear_interpolate(target_color, delta)
 		if portal_spawned:
 			if global_transform.origin.distance_squared_to(spawn_point) < 4:
-				emit_signal("player_won")
+				$TeleportNoise.play()				
+				player_has_won_game()
 	if caught_object:
 		pass
 	$VanCamViewPort/VanCam.global_transform = $VanCameraPoint.global_transform

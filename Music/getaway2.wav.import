@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/getaway2.wav-c295376e0aebbbc2883ea852dbd57329.sample"
+
+[deps]
+
+source_file="res://Music/getaway2.wav"
+dest_files=[ "res://.import/getaway2.wav-c295376e0aebbbc2883ea852dbd57329.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0

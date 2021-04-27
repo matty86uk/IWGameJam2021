@@ -4,14 +4,6 @@ extends Node
 var game = load("res://Scenes/Game.tscn").instance()
 
 func _ready():	
-	
-	var p1 = Vector3(20, 0, 40)
-	var p2 = Vector3(20, 0, 39)
-	
-	print(p1 + Vector3.FORWARD/4)
-	print(p1 + Vector3.FORWARD/4 * 2)
-	print(p2 + Vector3.BACK/4)
-	print(p2 + Vector3.BACK/4 * 2)
 
 	var vehicle_dictionary = load_vehicle_scenes()
 	game.add_scene_dictionary(vehicle_dictionary, "vehicle", load_json_file("res://Data/vehicles.txt"))
@@ -21,6 +13,10 @@ func _ready():
 	
 	var police_dictionary = load_police_scenes()
 	game.add_scene_dictionary(police_dictionary, "police", load_json_file("res://Data/police.txt"))
+	
+	print("vehicle", vehicle_dictionary)
+	print("pedestrian", pedestrian_dictionary)
+	print("police", police_dictionary)
 	
 	add_child(game)
 
@@ -43,7 +39,7 @@ func load_directory(path, extension):
 		var file_name = dir.get_next()
 		while file_name != "":
 			if file_name.ends_with(extension):
-				dictionary[file_name] = load(path + "//" + file_name)
+				dictionary[file_name] = load(path + "/" + file_name)
 			file_name = dir.get_next()
 	return dictionary
 	

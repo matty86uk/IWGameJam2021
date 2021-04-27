@@ -146,6 +146,9 @@ func order_arrived():
 	
 	shop_ui.connect("go_pressed", self, "_go_pressed")
 
+func hide_ui():
+	shop_ui.hide()
+
 func get_drink_order():
 	return drink_order
 

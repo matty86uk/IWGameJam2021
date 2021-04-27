@@ -4,7 +4,7 @@ signal finished_loading
 var loading_thread = Thread.new()
 
 var world = load("res://Scenes/FruitWorld.tscn").instance()
-var blender_scene = load("res://Scenes/BlenderScene.tscn")
+#var blender_scene = load("res://Scenes/BlenderScene.tscn")
 var shop_world_scene = load("res://Scenes/ShopWorld.tscn")
 var main_menu_scene = load("res://Scenes/MainMenu.tscn")
 
@@ -13,7 +13,17 @@ var shop_world
 
 var scene_dictionary = {}
 var game_data_dictionary = {}
-var game_data_total_entities = {"vehicle":200, "pedestrian":800, "police":10}
+var game_data_total_entities = {"vehicle":200, "pedestrian":600, "police":10}
+
+
+var music_dictionary = {
+	"happy":["happy1"],
+	"getaway":["getaway1", "getaway2"],
+	"normal":["normal1", "normal2", "normal3", "normal4"]
+}
+
+var music_type = "happy"
+var music = "happy1"
 
 func _ready():
 	main_menu_scene()
@@ -21,9 +31,11 @@ func _ready():
 func _load_fruit_world():
 	connect("finished_loading", self, "_finished_loading")
 	print("load world")
-	
+	world.connect("normal_music", self, "_set_music_normal")
+	world.connect("getaway_music", self, "_set_music_getaway")
 	fruit_world_scene("")
 	_finished_loading()
+	shop_world.hide_ui()
 	shop_world.hide()
 	world.show_player_ui()
 
@@ -62,6 +74,7 @@ func fruit_world_scene(userdata):
 	#emit_signal("finished_loading")
 	
 func _finished_loading():
+
 	#print("Thread Active:", loading_thread.is_active())
 	print("finished loading")
 	add_child(world)
@@ -69,21 +82,22 @@ func _finished_loading():
 	world.move_camera("Start")
 	world.set_current_camera()
 	world.transition_camera("Final")
-	print("drink order:", shop_world.get_drink_order())
+	print("drink order:", shop_world.get_drink_order())	
+
 	
-func blender_scene():
-	var blender = blender_scene.instance()
-	var fruits = random_fruits()
-	var fruit_data = {}
-	
-	for fruit in fruits:	
-		var fruit_scene_key = str(fruit, ".tscn")
-		var fruit_scene	=  scene_dictionary["pedestrian"].get(fruit_scene_key)
-		fruit_data[fruit] = fruit_scene
-	
-	blender.init(fruits, fruit_data)
-	add_child(blender)
-	blender.start()
+#func blender_scene():
+#	var blender = blender_scene.instance()
+#	var fruits = random_fruits()
+#	var fruit_data = {}
+#
+#	for fruit in fruits:	
+#		var fruit_scene_key = str(fruit, ".tscn")
+#		var fruit_scene	=  scene_dictionary["pedestrian"].get(fruit_scene_key)
+#		fruit_data[fruit] = fruit_scene
+#
+#	blender.init(fruits, fruit_data)
+#	add_child(blender)
+#	blender.start()
 
 func main_menu_scene():
 	shop_world = shop_world_scene.instance()
@@ -112,4 +126,27 @@ func random_fruits():
 func add_scene_dictionary(dictionary, key, game_data):
 	scene_dictionary[key] = dictionary
 	game_data_dictionary[key] = game_data
+	
+func set_music_happy():
+	music_type = "happy"
+
+func _set_music_getaway():
+	music_type = "getaway"
+	$Music.stop()
+
+func _set_music_normal():
+	music_type = "normal"
+	$Music.stop()
+
+func _process(delta):
+	if not $Music.playing:
+		change_music()
+
+func change_music():
+	var new_music_list = music_dictionary[music_type]
+	music = new_music_list[randi() % new_music_list.size()-1]
+	
+	$Music.stream = load(str("res://Music/", music, ".wav"))
+	$Music.playing = true
+	
 

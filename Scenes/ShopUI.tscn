@@ -44,12 +44,12 @@ __meta__ = {
 }
 
 [node name="Label" type="Label" parent="."]
-margin_left = 27.8849
+margin_left = 29.0074
 margin_top = 23.1323
-margin_right = 430.885
+margin_right = 432.007
 margin_bottom = 48.1323
 custom_fonts/font = SubResource( 2 )
-text = "Ingrediants:"
+text = "customer order: [random drink name]"
 __meta__ = {
 "_edit_use_anchors_": false
 }

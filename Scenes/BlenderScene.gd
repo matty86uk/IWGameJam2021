@@ -1,8 +1,9 @@
 extends Spatial
 
-
+signal blender_finished
+var emitted = false
 var base_pedestrian = preload("res://Entities/BasePedestrian.tscn")
-
+var scene_dictionary
 var fruits = []
 var fruit_data = {}
 var started = false
@@ -20,9 +21,10 @@ var drink = false
 
 
 
-func init(fruits, fruit_data):
+func init(fruits, fruit_data, scene_dictionary):
 	self.fruits = fruits
 	self.fruit_data = fruit_data
+	self.scene_dictionary = scene_dictionary
 	
 	var blended_color = color_from_fruit(fruits[0])
 	for i in range(fruits.size()):
@@ -34,6 +36,14 @@ func init(fruits, fruit_data):
 	$bowl/drink/tmpParent/bowl.material_override = mat
 	
 func start():
+	var blended_color = color_from_fruit(fruits[0])
+	for i in range(fruits.size()):
+		blended_color = blended_color.linear_interpolate(color_from_fruit(fruits[i]), 0.5)
+		
+	var mat = SpatialMaterial.new()
+	mat.albedo_color = blended_color
+	mat.flags_unshaded = true
+	$bowl/drink/tmpParent/bowl.material_override = mat
 	started = true
 	pass
 
@@ -64,19 +74,24 @@ func _process(delta):
 			$bowl/drink.transform.origin = pos
 		if drink_height > drink_height_max * 0.8:
 			stop_blade = true
+			if not emitted:
+				emit_signal("blender_finished")
+				emitted = true
 		
 
 func add_fruit(fruit):
 	var new_fruit = base_pedestrian.instance()
 	new_fruit.transform.origin = $Pipe/Spatial.global_transform.origin
 	new_fruit.scale = Vector3(2,2,2)	
-	new_fruit.rotation = Vector3(randf(), randf(), randf())
-	var new_entity_scene = fruit_data[fruit].instance()
+	new_fruit.rotation = Vector3(randf(), randf(), randf())	
+	var new_entity_scene_key = fruit_data[fruit].get("scene")
+	var new_entity_scene = scene_dictionary.get(new_entity_scene_key).instance()
 	for child in new_entity_scene.get_children():
 		new_entity_scene.remove_child(child)
 		new_fruit.add_child(child)
 	add_child(new_fruit)
 	new_fruit.apply_central_impulse(Vector3.RIGHT * ((randi() % 2)))
+	$Jump.play()
 	
 func color_from_fruit(fruit):
 	

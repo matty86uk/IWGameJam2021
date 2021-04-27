@@ -29,9 +29,17 @@ var police_update_timer
 
 var police_evade_time_max = 30
 var police_evade_time = 0
-var police_evade_time_interval = 5
+var police_evade_time_interval = 1
 var police_alert = false
 var police_alert_perm = false
+
+
+var entity_timers_desc = {
+	"do_pedestrian": 1.0,
+	"do_vehicle": 1.0,
+	"do_police": 1.0,
+}
+var entity_timers = []
 
 func init_player(player):
 	player.connect("weapon_used", self, "_weapon_used")
@@ -58,11 +66,21 @@ func _ready():
 	police_update_timer = Timer.new()
 	add_child(police_update_timer)
 	
-	police_update_timer.connect("timeout", self, "_on_timer_timeout")
+	police_update_timer.connect("timeout", self, "_police_logic")
 	police_update_timer.set_wait_time(police_evade_time_interval)
 	police_update_timer.set_one_shot(false) # Make sure it loops
 	police_update_timer.start()
-
+	
+	for entity_timer in entity_timers_desc.keys():
+		var timeout = entity_timers_desc[entity_timer]
+		var new_timer = Timer.new()
+		new_timer.name = entity_timer
+		add_child(new_timer)
+		new_timer.connect("timeout", self, entity_timer)
+		new_timer.set_wait_time(timeout)
+		new_timer.set_one_shot(false)
+		new_timer.start()
+		
 func start_entity_loop():
 	pass
 
@@ -150,12 +168,51 @@ func add_police(type, subtype, position):
 
 
 func _process(delta):
-	entity_loop()
+	#entity_loop()
 	pass
 	
 func entity_loop():	
 		do_police()
-		for vehicle in vehicles:
+		do_vehicle()
+		do_pedestrian()
+		
+
+func do_pedestrian():
+	#print("do_pedestrian")
+	for pedestrian in pedestrians:
+			var pedestrian_state = pedestrian.state
+			var next_pedestrian_state = null
+			match pedestrian_state:
+				pedestrian.STATE_INSTANCED:
+					next_pedestrian_state = pedestrian.STATE_READY
+				pedestrian.STATE_READY:
+					var path = generate_pedestrian_path(pedestrian.global_transform.origin)
+					pedestrian.path_index = 0
+					if path.size() > 0:
+						pedestrian.set_path(path)
+						next_pedestrian_state = pedestrian.STATE_HAS_ORDERS
+					else:
+						#print("No path")
+						var new_path = []
+						new_path.push_back(pedestrian.transform.origin)
+						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD))
+						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD * 2))
+						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD * 3))
+						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD * 4))
+						pedestrian.set_path(new_path)
+						next_pedestrian_state = pedestrian.STATE_HAS_ORDERS
+				pedestrian.STATE_HAS_ORDERS:
+	#				vehicle.path_index = 0
+					#debug_show_path(vehicle)
+					next_pedestrian_state = pedestrian.STATE_ENABLED
+				pedestrian.STATE_ENABLED:
+					check_pedestrian_point(pedestrian)
+			if next_pedestrian_state:
+				pedestrian.state = next_pedestrian_state
+
+func do_vehicle():
+	#print("do_vehicle")
+	for vehicle in vehicles:
 			var vehicle_state = vehicle.state
 			var next_vehicle_state = null
 			match vehicle_state:
@@ -168,7 +225,7 @@ func entity_loop():
 						vehicle.set_path(path)
 						next_vehicle_state = vehicle.STATE_HAS_ORDERS
 					else:				
-						print("No path")
+						#print("No path")
 						var new_path = []
 						new_path.push_back(vehicle.transform.origin)
 						new_path.push_back(vehicle.transform.origin + (Vector3.FORWARD))
@@ -186,39 +243,8 @@ func entity_loop():
 			if next_vehicle_state:
 				vehicle.state = next_vehicle_state
 
-		for pedestrian in pedestrians:
-			var pedestrian_state = pedestrian.state
-			var next_pedestrian_state = null
-			match pedestrian_state:
-				pedestrian.STATE_INSTANCED:
-					next_pedestrian_state = pedestrian.STATE_READY
-				pedestrian.STATE_READY:
-					var path = generate_pedestrian_path(pedestrian.global_transform.origin)
-					pedestrian.path_index = 0
-					if path.size() > 0:
-						pedestrian.set_path(path)
-						next_pedestrian_state = pedestrian.STATE_HAS_ORDERS
-					else:
-						print("No path")
-						var new_path = []
-						new_path.push_back(pedestrian.transform.origin)
-						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD))
-						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD * 2))
-						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD * 3))
-						new_path.push_back(pedestrian.transform.origin + (Vector3.FORWARD * 4))
-						pedestrian.set_path(new_path)
-						next_pedestrian_state = pedestrian.STATE_HAS_ORDERS
-				pedestrian.STATE_HAS_ORDERS:
-	#				vehicle.path_index = 0
-					#debug_show_path(vehicle)
-					next_pedestrian_state = pedestrian.STATE_ENABLED
-				pedestrian.STATE_ENABLED:
-					check_pedestrian_point(pedestrian)
-			if next_pedestrian_state:
-				pedestrian.state = next_pedestrian_state
-		
-
 func do_police():
+	#print("do_police")
 	for police in polices:
 		var police_state =police.state
 		var next_police_state = null
@@ -255,7 +281,7 @@ func do_police():
 		if next_police_state:
 			police.state = next_police_state
 			
-func _on_timer_timeout():
+func _police_logic():
 	if police_alert_perm:
 		police_alert = true
 		police_evade_time = 0
@@ -274,7 +300,7 @@ func _on_timer_timeout():
 					police.set_path(path)
 		if police.can_see_player(player) and police_alert:
 			player_seen = true
-			print("Spotted")
+			#print("Spotted")
 			player.show_spotted()
 			police_evade_time = 0
 		else:
@@ -285,7 +311,7 @@ func _on_timer_timeout():
 		
 
 	if not player_seen:
-		print("Hiding")
+		#print("Hiding")
 		if police_alert:
 			player.show_hiding()
 		police_evade_time += police_evade_time_interval
@@ -293,7 +319,7 @@ func _on_timer_timeout():
 			police_alert = false
 			player.hide_warning()
 			police_evade_time =  police_evade_time_max + 1
-			print("Escaped")
+			#print("Escaped")
 			var was_chased = false
 			for police in polices:
 				if police.mode == police.MODE_CHASE:
@@ -349,7 +375,7 @@ func check_vehicle_point(vehicle):
 #		elif distance > 6:
 #			vehicle.state = vehicle.STATE_READY		
 	else:
-		print("new orders")
+		#print("new orders")
 		vehicle.state = vehicle.STATE_READY
 
 func check_pedestrian_point(pedestrian):
@@ -362,7 +388,7 @@ func check_pedestrian_point(pedestrian):
 #		elif distance > 6:
 #			pedestrian.state = pedestrian.STATE_READY		
 	else:
-		print("new orders")
+		#print("new orders")
 		pedestrian.state = pedestrian.STATE_READY
 	pass
 	

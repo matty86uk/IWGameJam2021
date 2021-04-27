@@ -21,6 +21,7 @@ func init(drink_order, fruit_data, scene_dictionary):
 	
 func create_fruits():
 	var starting_point = $Viewport/Spatial/Left
+	print(scene_dictionary)
 	for i in range(drink_order.size()):
 		var fruit_scene = fruit_data[drink_order[i]]["scene"]
 		var fruit = scene_dictionary[fruit_scene].instance()
