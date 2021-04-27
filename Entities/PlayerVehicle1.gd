@@ -181,8 +181,8 @@ func _input(event):
 		return
 	if event.is_action_pressed("fire"):
 		fired = true
-	if event is InputEventKey and event.scancode == KEY_K:
-		player_has_won_game()
+#	if event is InputEventKey and event.scancode == KEY_K:
+#		player_has_won_game()
 		
 func player_has_won_game():
 	emit_signal("player_won")
